@@ -210,7 +210,7 @@ body.booting{overflow:hidden}
   <div>
     <div class="ovl">MIX POKER MASTER</div>
     <h1>EQUITY LAB</h1>
-    <div class="sub">全26ゲーム統合エクイティ計算機・VSシミュレーター</div>
+    <div class="sub">全27ゲーム統合エクイティ計算機・VSシミュレーター</div>
   </div>
   <div style="text-align:right">
     <div class="chips" style="justify-content:flex-end;margin-bottom:10px">
@@ -670,6 +670,38 @@ function archieKeep(hand){
   return hand.slice().sort((a,b)=>(a.r===14?1:a.r)-(b.r===14?1:b.r)).slice(0,3);
 }
 
+
+// ---- 6card Archie Single Draw: best-5-of-6 で Archie 判定（ハイ資格=9ペア以上／ロー資格=8ob） ----
+function archie6Keep(hand){
+  const seen=new Set(), low=[];
+  hand.slice().sort((a,b)=>(a.r===14?1:a.r)-(b.r===14?1:b.r)).forEach(c=>{
+    const v=c.r===14?1:c.r; if(v<=8 && !seen.has(v)){ seen.add(v); low.push(c);} });
+  const bySuit={}; hand.forEach(c=>{(bySuit[c.s]=bySuit[c.s]||[]).push(c);});
+  for(const s in bySuit){ if(bySuit[s].length>=5) return bySuit[s].slice(0,5); }
+  const byR={}; hand.forEach(c=>{(byR[c.r]=byR[c.r]||[]).push(c);});
+  let pair=null,pr=0; for(const r in byR){ if(byR[r].length>=2 && +r>pr){ pr=+r; pair=byR[r].slice(0,Math.min(3,byR[r].length)); } }
+  const hiPair=(pair && pr>=9)?pair:null;      // ハイ資格を満たしうるペアのみ両面キープ対象
+  let keep=hiPair?hiPair.slice():[];
+  const ids=new Set(keep.map(c=>c.id));
+  for(const c of low){ if(keep.length>=6) break; if(!ids.has(c.id)){ keep.push(c); ids.add(c.id); } }
+  if(keep.length>=3) return keep.slice(0,6);
+  if(pair) return pair;
+  return hand.slice().sort((a,b)=>(a.r===14?1:a.r)-(b.r===14?1:b.r)).slice(0,3);
+}
+function trialArchie6(hero, nopp, ndraw){
+  const d=shuffledDeck(hero); let i=0;
+  const nd=ndraw||1;
+  function play(start){ let h=start.slice();
+    for(let r=0;r<nd;r++){ const keep=archie6Keep(h);
+      if(keep.length>=6){ h=keep.slice(0,6); continue; }
+      const need=6-keep.length; const drawn=d.slice(i,i+need); i+=need; h=keep.concat(drawn); }
+    return h; }
+  const hf=play(hero); const opps=[];
+  for(let o=0;o<nopp;o++){ const os=d.slice(i,i+6); i+=6; opps.push(play(os)); }
+  return resolveArchieBool([bestHigh(hf)].concat(opps.map(bestHigh)),
+                           [low8(hf)].concat(opps.map(low8)));
+}
+
 // ---- draw models ----
 function keep27(cards){
   const byrank={};
@@ -818,6 +850,7 @@ function oneTrial(kind, hero, nopp, draws){
     case 'badacey': return trialBadacey(hero,nopp,draws);
     case 'baduecey': return trialBaduecey(hero,nopp,draws);
     case 'archie': return trialArchie(hero,nopp,draws);
+    case 'archie6': return trialArchie6(hero,nopp,draws);
     case 'ari': return trialAri(hero,nopp,draws);
     case 'sstud8nq': return trialSStud8NQ(hero,nopp);
     case 'dramahaHi': return trialDramaha(hero,nopp,false);
@@ -1017,6 +1050,12 @@ function playDraws(kind, hands, firstDiscs, ndraws, stub){
         const ids=new Set(keep.map(c=>c.id)); const thrown=finals[p].filter(c=>!ids.has(c.id));
         for(const c of thrown) stub.muck.push(c);
         finals[p]=keep.concat(drawn);
+      } else if(kind==='archie6'){
+        const keep=archie6Keep(finals[p]); if(keep.length>=6){ finals[p]=keep.slice(0,6); continue; }
+        const need=6-keep.length; const drawn=stubDraw(stub,need);
+        const ids=new Set(keep.map(c=>c.id)); const thrown=finals[p].filter(c=>!ids.has(c.id));
+        for(const c of thrown) stub.muck.push(c);
+        finals[p]=keep.concat(drawn);
       } else if(kind==='archie'||kind==='ari'){
         const keep=archieKeep(finals[p]); if(keep.length>=5){ finals[p]=keep.slice(0,5); continue; }
         const need=5-keep.length; const drawn=stubDraw(stub,need);
@@ -1136,7 +1175,7 @@ function vsOneTrial(cfg){
     const C = comm || stubDraw(stub,1)[0];
     return resolveArchie(finals.map(f=>bestHigh(f.concat([C]))), finals.map(f=>low8(f)));
   }
-  if(kind==='draw27'||kind==='badugi'||kind==='badacey'||kind==='baduecey'||kind==='archie'||kind==='a5td'){
+  if(kind==='draw27'||kind==='badugi'||kind==='badacey'||kind==='baduecey'||kind==='archie'||kind==='archie6'||kind==='a5td'){
     let ex=hero.slice(); opps.forEach(o=>ex=ex.concat(o));
     const stub=makeStub(ex);
     const nd=cfg.ndraws||1;
@@ -1150,6 +1189,8 @@ function vsOneTrial(cfg){
                                               [a5key5(finals[0])].concat(finals.slice(1).map(a5key5)));
     if(kind==='baduecey') return resolveSplit2([badugiKeyHigh(finals[0])].concat(finals.slice(1).map(badugiKeyHigh)),
                          [deuce7(finals[0])].concat(finals.slice(1).map(deuce7)));
+    if(kind==='archie6') return resolveArchie([bestHigh(finals[0])].concat(finals.slice(1).map(bestHigh)),
+                         [low8(finals[0])].concat(finals.slice(1).map(low8)));
     return resolveArchie([rank5(finals[0],true)].concat(finals.slice(1).map(f=>rank5(f,true))),
                          [low8(finals[0])].concat(finals.slice(1).map(low8)));
   }
@@ -1333,15 +1374,19 @@ const LAB_GAMES = [
  {id:'dramahaBadugi',kind:'dramahaBadugi', jp:'ドラマハ バドゥーギ',         grp:'another', fam:'board', slots:5, pk:['dramahaBadugi']},
  {id:'dboard8',  kind:'dboard8',       jp:'ダブルボード オマハ8',            grp:'another', fam:'board', slots:5, pk:['dboard8']},
  {id:'dboardBigO',kind:'dboardBigO',   jp:'ダブルボード ビッグO',            grp:'another', fam:'board', slots:5, pk:['dboardBigO']},
+ {id:'archie6',  kind:'archie6',       jp:'6カード アーチー シングルドロー',   grp:'abyss',   fam:'draw',  slots:6, draws:1, pk:[],
+  split:true, hiLabel:'ハイ(9ペア+)', loLabel:'ロー(8ob)'},
  {id:'chinchi',  kind:'chinchi',       jp:'スタッド チンチロー',             grp:'abyss',   fam:'stud',  slots:7, chin:true, pk:['chinchi']},
  {id:'achinchi', kind:'achinchi',      jp:'アクション チンチロー',           grp:'abyss',   fam:'stud',  slots:7, chin:true, pk:['achinchi']},
 ].map(g=>{
   const b=SRC[g.pk[0]]||{};
-  g.split=!!b.split; g.hiLabel=b.hiLabel||'ハイ'; g.loLabel=b.loLabel||'ロー';
+  if(g.split===undefined) g.split=!!b.split;
+  g.hiLabel=g.hiLabel||b.hiLabel||'ハイ'; g.loLabel=g.loLabel||b.loLabel||'ロー';
   g.presets=[].concat.apply([], g.pk.map(k=>PRESETS[k]||[]));
   g.vspresets=[].concat.apply([], g.pk.map(k=>VS_PRESETS[k]||[]));
   return g;
 });
+if(!TRIALS.archie6) TRIALS.archie6 = TRIALS.archie || 3000;
 const G_BY_ID = Object.fromEntries(LAB_GAMES.map(g=>[g.id,g]));
 const DBL_BOARD = new Set(['dboard8','dboardBigO']);
 const SUITS=['s','h','d','c'], SSYM={s:'♠',h:'♥',d:'♦',c:'♣'};
@@ -1677,7 +1722,7 @@ resetHands(); renderGameSelect(); render();
   }
   warp.innerHTML=frag;
   /* 進捗ログ */
-  var STEPS=[[14,'LOADING ENGINE'],[34,'DEALING 52 CARDS'],[56,'BUILDING 26 GAMES'],[76,'CALIBRATING MONTE CARLO'],[92,'SHUFFLING DECK'],[100,'READY']];
+  var STEPS=[[14,'LOADING ENGINE'],[34,'DEALING 52 CARDS'],[56,'BUILDING 27 GAMES'],[76,'CALIBRATING MONTE CARLO'],[92,'SHUFFLING DECK'],[100,'READY']];
   var bar=document.getElementById('btbar'), log=document.getElementById('btlog'), pct=document.getElementById('btpct');
   var p=0, si=0, done=false, t0=Date.now();
   var tick=setInterval(function(){

@@ -1,0 +1,1704 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="color-scheme" content="dark">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MIX EQUITY LAB｜全ゲーム統合エクイティ計算機</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:dark;
+ --bg:#1d1243; --panel:rgba(32,22,72,.62); --panel2:rgba(46,32,96,.55);
+ --line:rgba(255,255,255,.14); --line2:rgba(255,255,255,.26);
+ --pink:#ff5fa2; --pinkL:#ff9ecb; --yellow:#ffd93d; --cream:#ffe694;
+ --mint:#4ee6b8; --mintL:#93f2d4; --sky:#55c7ff; --skyL:#9fdfff;
+ --text:#f4eeff; --muted:#cfc6f2; --dim:#8a80b8; --onCandy:#2a1030;
+ --disp:'Bebas Neue','Noto Sans JP',sans-serif;
+ --nz:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");}
+*{box-sizing:border-box;margin:0}
+body{background:#1d1243;min-height:100vh;color:var(--text);font-family:'Noto Sans JP',sans-serif;font-size:15px}
+.bgvig{position:fixed;inset:0;pointer-events:none;background:
+ radial-gradient(680px 460px at 18% 8%, rgba(255,95,162,.14), transparent 60%),
+ radial-gradient(760px 540px at 85% 20%, rgba(85,199,255,.13), transparent 60%),
+ radial-gradient(700px 500px at 78% 88%, rgba(255,217,61,.09), transparent 62%),
+ radial-gradient(620px 480px at 10% 82%, rgba(78,230,184,.10), transparent 60%)}
+.wrap{position:relative;max-width:1380px;margin:0 auto;padding:26px 22px 60px}
+header{display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:14px;
+ border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:22px}
+.ovl{font-family:var(--disp);letter-spacing:.5em;color:var(--cream);font-size:15px}
+h1{font-family:var(--disp);font-size:74px;letter-spacing:.04em;line-height:.95;font-weight:400;
+ background:linear-gradient(90deg,#ff9ecb,#ffe694,#93f2d4,#9fdfff,#ff9ecb);background-size:300% auto;
+ -webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 9s ease-in-out infinite alternate}
+@keyframes shine{to{background-position:120% center}}
+.sub{color:var(--muted);font-size:13.5px;margin-top:4px}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{border:1px solid rgba(255,158,203,.55);color:var(--pinkL);border-radius:999px;padding:7px 14px;font-size:13px;letter-spacing:.06em;background:rgba(255,95,162,.08)}
+.backlink{color:var(--muted);font-size:13px;text-decoration:none;border-bottom:1px solid var(--line2)}
+.backlink:hover{color:var(--cream);border-color:var(--yellow)}
+main{display:grid;grid-template-columns:300px 1fr 380px;gap:20px;align-items:start}
+.panel{background:linear-gradient(160deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:18px;padding:18px;backdrop-filter:blur(8px)}
+.panel>.pt{font-family:var(--disp);font-size:22px;letter-spacing:.14em;color:var(--cream);margin-bottom:12px;
+ border-bottom:1px solid rgba(255,217,61,.35);padding-bottom:8px}
+label.fld{display:block;color:var(--muted);font-size:13px;letter-spacing:.05em;margin:14px 0 6px}
+select,input[type=number]{width:100%;background:rgba(20,12,48,.85);border:1px solid var(--line2);color:var(--text);
+ border-radius:10px;padding:10px 12px;font-size:14.5px;font-family:inherit}
+.segrow{display:flex;gap:6px;flex-wrap:wrap}
+.seg{flex:1;min-width:60px;background:transparent;border:1px solid var(--line2);color:var(--muted);border-radius:12px;
+ padding:9px 6px;font-size:13.5px;cursor:pointer;font-family:inherit;min-height:40px;transition:all .15s}
+.seg:hover:not(:disabled){border-color:var(--yellow);color:var(--cream)}
+.seg:disabled{opacity:.4;cursor:not-allowed}
+.seg.on{border-color:var(--yellow);color:var(--cream);background:rgba(255,217,61,.12);font-weight:700}
+.hint{color:var(--dim);font-size:13px;line-height:1.7;margin-top:12px}
+.pcard{border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:14px;background:linear-gradient(160deg,var(--panel2),var(--panel))}
+.pcard .ph{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px;flex-wrap:wrap}
+.ph b{font-size:15px;letter-spacing:.04em}
+.ph .you{color:var(--cream)}
+.meta{color:var(--dim);font-size:13px}
+.slots{display:flex;gap:8px;flex-wrap:wrap}
+.slot{width:58px;height:80px;border-radius:10px;font-size:19px;font-weight:700;cursor:pointer;position:relative;
+ display:flex;align-items:center;justify-content:center;font-family:'Noto Sans JP';transition:transform .12s}
+.slot:active{transform:scale(.94)}
+.slot.empty{background:rgba(20,12,48,.5);border:1.5px dashed rgba(255,255,255,.32);color:var(--dim);font-size:22px}
+.slot.empty:hover{border-color:var(--pink);color:var(--pinkL)}
+.slot.filled{background:linear-gradient(170deg,#2c1f63,#221650);border:1px solid var(--line2);box-shadow:0 6px 16px rgba(0,0,0,.4)}
+.slot .rm{position:absolute;top:-7px;right:-7px;width:20px;height:20px;border-radius:50%;background:#170d38;
+ border:1px solid var(--line2);color:var(--muted);font-size:11px;display:flex;align-items:center;justify-content:center}
+.slot .rm:hover{color:var(--pink);border-color:var(--pink)}
+.offmsg{color:var(--dim);font-size:14px;padding:14px 4px}
+.tag{font-family:var(--disp);letter-spacing:.12em;color:var(--cream);font-size:16px}
+#runbtn{width:100%;background:linear-gradient(90deg,var(--pink),var(--yellow));color:var(--onCandy);border:none;border-radius:999px;
+ padding:16px;font-size:17px;font-weight:800;letter-spacing:.08em;cursor:pointer;font-family:'Noto Sans JP';
+ box-shadow:0 10px 26px rgba(255,95,162,.35);transition:transform .12s}
+#runbtn:active{transform:scale(.97)}
+#runbtn:disabled{opacity:.55;cursor:wait}
+#prog{height:6px;border-radius:6px;background:rgba(255,255,255,.12);overflow:hidden;margin:12px 0 8px}
+#prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--pink),var(--yellow),var(--mint));transition:width .15s}
+#meta{color:var(--muted);font-size:13px;text-align:right;min-height:18px}
+#results{margin-top:12px}
+#results table{width:100%;border-collapse:collapse;font-size:14px}
+#results th{color:var(--cream);font-family:var(--disp);letter-spacing:.1em;font-size:15px;text-align:left;
+ border-bottom:1px solid rgba(255,217,61,.4);padding:8px 6px}
+#results td{padding:11px 6px;border-bottom:1px solid var(--line)}
+#results td.eq{font-weight:800;font-size:16px;position:relative;color:var(--cream)}
+#results .bar{position:absolute;left:0;bottom:4px;height:3px;background:linear-gradient(90deg,var(--pink),var(--yellow));border-radius:2px}
+#results tr.dim td{color:var(--dim)}
+.note{color:var(--dim);font-size:12.5px;margin-top:8px;line-height:1.7}
+#toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,20px);background:#3a1030;border:1px solid var(--pink);
+ color:#ffd7e6;padding:12px 20px;border-radius:14px;font-size:13.5px;opacity:0;pointer-events:none;transition:all .25s;z-index:60}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+#picker{position:fixed;inset:0;background:rgba(10,5,26,.82);display:none;align-items:flex-end;justify-content:center;z-index:50}
+#picker.on{display:flex}
+.psheet{background:linear-gradient(180deg,#241754,#1a0f3e);border:1px solid rgba(255,217,61,.45);border-radius:20px 20px 0 0;padding:18px;width:min(760px,100%);
+ max-height:78vh;overflow:auto}
+.psheet .pt2{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.prow{display:flex;gap:5px;margin-bottom:6px;flex-wrap:wrap}
+.pc{width:48px;height:60px;border-radius:8px;background:linear-gradient(170deg,#2c1f63,#221650);border:1px solid var(--line2);
+ font-size:15px;font-weight:700;cursor:pointer;font-family:'Noto Sans JP'}
+.pc:hover:not(.dis){border-color:var(--yellow)}
+.pc.dis{opacity:.2;cursor:not-allowed}
+.pc.cur{border-color:var(--yellow);box-shadow:0 0 0 2px rgba(255,217,61,.4)}
+#pickClose{background:transparent;border:1px solid var(--line2);color:var(--muted);border-radius:999px;padding:8px 18px;cursor:pointer;font-family:inherit}
+#pickClose:hover{border-color:var(--pink);color:var(--pinkL)}
+@media(max-width:1080px){ main{grid-template-columns:1fr} h1{font-size:56px}
+ .slot{width:52px;height:72px} .pc{width:44px;height:56px} }
+
+/* --- スロット（ラベル付き／交換指定） --- */
+.sw{display:flex;flex-direction:column;align-items:center;gap:5px}
+.sl{font-size:13px;color:var(--dim);letter-spacing:.04em;white-space:nowrap}
+.slot .dc{position:absolute;top:-7px;left:-7px;width:22px;height:22px;border-radius:50%;background:#170d38;
+ border:1px solid var(--line2);color:var(--muted);font-size:12px;display:flex;align-items:center;justify-content:center}
+.slot .dc:hover{color:var(--yellow);border-color:var(--yellow)}
+.slot .dc.on{background:var(--pink);border-color:var(--pink);color:#fff}
+.slot.willdisc{opacity:.5;border-style:dashed;border-color:var(--pink)}
+/* --- チンチロー：ハンド側／看板側の分離 --- */
+.sgrp{border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px;background:rgba(20,12,48,.35)}
+.sgt{font-family:var(--disp);font-size:17px;letter-spacing:.1em;color:var(--cream);margin-right:10px}
+.sgn{font-size:13px;color:var(--dim)}
+.sgrp .slots{margin-top:10px}
+
+/* ================= BOOT：デジタル・ダイブ演出 ================= */
+body.booting{overflow:hidden}
+#boot{position:fixed;inset:0;z-index:200;background:#07031a;overflow:hidden;
+ display:flex;align-items:center;justify-content:center;perspective:620px;perspective-origin:50% 50%}
+#boot.off{animation:bootOut .62s cubic-bezier(.7,0,.3,1) forwards;pointer-events:none}
+@keyframes bootOut{60%{opacity:1}100%{opacity:0;transform:scale(1.35);filter:blur(14px)}}
+/* --- 走るデータグリッド（奥行き） --- */
+.bt-grid{position:absolute;left:50%;top:50%;width:2600px;height:2600px;margin:-1300px 0 0 -1300px;
+ background-image:linear-gradient(rgba(85,199,255,.5) 1px,transparent 1px),linear-gradient(90deg,rgba(255,95,162,.42) 1px,transparent 1px);
+ background-size:74px 74px;transform:rotateX(76deg) translateZ(-140px);
+ animation:gridRun 1.15s linear infinite;opacity:.5;
+ -webkit-mask-image:radial-gradient(circle at 50% 50%,#000 8%,transparent 62%);
+ mask-image:radial-gradient(circle at 50% 50%,#000 8%,transparent 62%)}
+@keyframes gridRun{to{background-position:0 74px,74px 0}}
+/* --- ワープするカード片（ダイブ感） --- */
+.bt-warp{position:absolute;inset:0;transform-style:preserve-3d}
+.bt-warp i{position:absolute;left:50%;top:50%;font-style:normal;font-weight:700;
+ font-family:'Noto Sans JP';font-size:26px;opacity:0;
+ animation:warpIn 1.5s cubic-bezier(.55,0,.9,.35) infinite}
+@keyframes warpIn{
+  0%{opacity:0;transform:translate3d(var(--x),var(--y),-1500px) rotate(var(--r)) scale(.2)}
+  18%{opacity:1}
+  86%{opacity:.9}
+  100%{opacity:0;transform:translate3d(calc(var(--x)*4.6),calc(var(--y)*4.6),760px) rotate(calc(var(--r)*2.4)) scale(2.1)}}
+/* --- 中央コア --- */
+.bt-core{position:relative;z-index:3;text-align:center;transform-style:preserve-3d}
+.bt-ring{position:absolute;left:50%;top:50%;border-radius:50%;transform:translate(-50%,-50%);pointer-events:none}
+.bt-ring.a{width:250px;height:250px;border:1px solid rgba(85,199,255,.55);border-top-color:transparent;border-left-color:transparent;animation:spin 1.5s linear infinite}
+.bt-ring.b{width:320px;height:320px;border:1px dashed rgba(255,95,162,.5);border-right-color:transparent;animation:spin 2.6s linear reverse infinite}
+.bt-ring.c{width:190px;height:190px;border:2px solid rgba(255,217,61,.34);border-bottom-color:transparent;animation:spin 1.05s cubic-bezier(.6,0,.4,1) infinite}
+@keyframes spin{to{transform:translate(-50%,-50%) rotate(360deg)}}
+/* --- ロゴ（グリッチ） --- */
+.bt-logo{position:relative;font-family:var(--disp);font-size:78px;line-height:1;letter-spacing:.1em;color:#fff;
+ text-shadow:0 0 26px rgba(85,199,255,.6);animation:logoPulse 1.6s ease-in-out infinite}
+@keyframes logoPulse{50%{text-shadow:0 0 44px rgba(255,95,162,.85),0 0 90px rgba(85,199,255,.5)}}
+.bt-logo::before,.bt-logo::after{content:attr(data-t);position:absolute;left:0;top:0;width:100%;
+ clip-path:inset(0 0 55% 0);opacity:.92;pointer-events:none}
+.bt-logo::before{color:#ff5fa2;animation:gl1 2.1s steps(1) infinite}
+.bt-logo::after{color:#55c7ff;clip-path:inset(52% 0 0 0);animation:gl2 2.1s steps(1) infinite}
+@keyframes gl1{0%,72%,100%{transform:translate(0,0);opacity:0}74%{transform:translate(-5px,-3px);opacity:.95}78%{transform:translate(4px,2px)}82%{transform:translate(-2px,1px);opacity:.95}84%{opacity:0}}
+@keyframes gl2{0%,70%,100%{transform:translate(0,0);opacity:0}76%{transform:translate(5px,3px);opacity:.95}80%{transform:translate(-4px,-2px)}86%{transform:translate(2px,-1px);opacity:.95}88%{opacity:0}}
+.bt-sub{font-family:var(--disp);font-size:15px;letter-spacing:.55em;color:var(--mint);margin-top:6px;
+ text-indent:.55em;animation:subFade 1.6s ease-in-out infinite}
+@keyframes subFade{50%{opacity:.45}}
+/* --- 進捗 --- */
+.bt-bar{width:290px;height:3px;margin:26px auto 0;background:rgba(255,255,255,.14);border-radius:3px;overflow:hidden}
+.bt-bar i{display:block;height:100%;width:0;border-radius:3px;
+ background:linear-gradient(90deg,var(--pink),var(--yellow),var(--mint),var(--sky));
+ box-shadow:0 0 14px rgba(255,95,162,.75)}
+.bt-log{margin-top:12px;font-family:'Bebas Neue';font-size:14px;letter-spacing:.24em;color:var(--muted);min-height:18px}
+.bt-pct{font-family:'Bebas Neue';font-size:13px;letter-spacing:.2em;color:var(--dim);margin-top:5px}
+/* --- 走査線＋ノイズ --- */
+.bt-scan{position:absolute;inset:0;pointer-events:none;z-index:4;
+ background:repeating-linear-gradient(180deg,rgba(255,255,255,.055) 0 1px,transparent 1px 4px);
+ animation:scanMove .5s linear infinite}
+@keyframes scanMove{to{background-position:0 4px}}
+.bt-beam{position:absolute;left:0;right:0;height:130px;z-index:5;pointer-events:none;
+ background:linear-gradient(180deg,transparent,rgba(85,199,255,.16),transparent);animation:beam 2.3s linear infinite}
+@keyframes beam{0%{top:-130px}100%{top:100%}}
+.bt-noise{position:absolute;inset:-160px;z-index:6;pointer-events:none;opacity:.16;
+ background-image:var(--nz);animation:nz .09s steps(1) infinite}
+@keyframes nz{0%{transform:translate(0,0)}25%{transform:translate(-90px,50px)}50%{transform:translate(70px,-60px)}75%{transform:translate(-50px,-90px)}100%{transform:translate(80px,70px)}}
+.bt-skip{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);z-index:7;
+ font-family:'Bebas Neue';font-size:13px;letter-spacing:.3em;color:var(--dim);cursor:pointer}
+.bt-skip:hover{color:var(--pinkL)}
+@media(max-width:620px){ .bt-logo{font-size:46px} .bt-ring.b{width:230px;height:230px} .bt-ring.a{width:180px;height:180px} .bt-ring.c{width:136px;height:136px} .bt-bar{width:220px} }
+@media(prefers-reduced-motion:reduce){
+  .bt-grid,.bt-warp i,.bt-ring,.bt-scan,.bt-beam,.bt-noise,.bt-logo,.bt-logo::before,.bt-logo::after{animation:none!important}
+  .bt-noise{opacity:.06}
+}
+</style>
+</head>
+<body>
+<div id="boot" aria-hidden="true">
+  <div class="bt-grid"></div>
+  <div class="bt-warp" id="btwarp"></div>
+  <div class="bt-core">
+    <div class="bt-ring a"></div><div class="bt-ring b"></div><div class="bt-ring c"></div>
+    <div class="bt-logo" data-t="EQUITY LAB">EQUITY LAB</div>
+    <div class="bt-sub">MONTE CARLO ENGINE</div>
+    <div class="bt-bar"><i id="btbar"></i></div>
+    <div class="bt-log" id="btlog">BOOT</div>
+    <div class="bt-pct" id="btpct">0%</div>
+  </div>
+  <div class="bt-scan"></div><div class="bt-beam"></div><div class="bt-noise"></div>
+  <div class="bt-skip" id="btskip">TAP TO SKIP</div>
+</div>
+<div class="bgvig"></div>
+<div class="wrap">
+<header>
+  <div>
+    <div class="ovl">MIX POKER MASTER</div>
+    <h1>EQUITY LAB</h1>
+    <div class="sub">全26ゲーム統合エクイティ計算機・VSシミュレーター</div>
+  </div>
+  <div style="text-align:right">
+    <div class="chips" style="justify-content:flex-end;margin-bottom:10px">
+      <span class="chip" id="chip-game">—</span>
+      <span class="chip" id="chip-mode">—</span>
+      <span class="chip" id="chip-split">—</span>
+    </div>
+    <a class="backlink" href="https://isumiaki.github.io/MIXMASTER/" target="_blank">ガイド本編（MIX POKER MASTER）→</a>
+  </div>
+</header>
+<main>
+  <aside class="panel">
+    <div class="pt">SETTINGS</div>
+    <label class="fld">ゲーム</label>
+    <select id="gsel"></select>
+    <label class="fld">対戦モード</label>
+    <div class="segrow" id="modeseg">
+      <button class="seg" data-m="rnd">vs ランダム</button>
+      <button class="seg" data-m="vs">VS 指定対決</button>
+    </div>
+    <div id="noppwrap">
+      <label class="fld">ランダム相手の人数</label>
+      <div class="segrow" id="noppseg">
+        <button class="seg" data-n="1">1</button><button class="seg" data-n="2">2</button>
+        <button class="seg" data-n="3">3</button><button class="seg" data-n="4">4</button>
+      </div>
+    </div>
+    <label class="fld">試行回数</label>
+    <div class="segrow" id="tseg">
+      <button class="seg" data-t="auto">AUTO</button>
+      <button class="seg" data-t="manual">手動</button>
+    </div>
+    <div id="trialbox" style="margin-top:8px"><input type="number" id="trialinput" value="5000" min="500" max="200000" step="500"></div>
+    <div class="hint" id="autoinfo"></div>
+    <label class="fld">プリセット</label>
+    <select id="psel"></select>
+    <button class="seg" id="papply" style="width:100%;margin-top:8px">読み込む</button>
+    <div class="hint" id="hint"></div>
+    <div class="hint" style="border-top:1px solid var(--line);padding-top:10px;margin-top:14px">
+      ベット形式（NL／PL／FL）は勝率判定に影響しないため統合しています。スーパー有無で最終判定が同じ種目も1つにまとめました。
+    </div>
+  </aside>
+  <section>
+    <div class="pcard">
+      <div class="ph"><b class="you">PLAYER 1 — あなた</b><span><button class="seg" id="clearHero" style="min-height:34px;padding:6px 14px">クリア</button></span></div>
+      <div id="heroSlots"></div>
+      <div class="meta" id="heroMeta" style="margin-top:10px"></div>
+    </div>
+    <div id="oppsWrap">
+      <div class="pcard"><div class="ph"><b><label style="cursor:pointer"><input type="checkbox" id="opp0chk"> 相手 1</label></b><span class="meta" id="opp0meta"></span></div><div id="opp0slots"></div></div>
+      <div class="pcard"><div class="ph"><b><label style="cursor:pointer"><input type="checkbox" id="opp1chk"> 相手 2</label></b><span class="meta" id="opp1meta"></span></div><div id="opp1slots"></div></div>
+      <div class="pcard"><div class="ph"><b><label style="cursor:pointer"><input type="checkbox" id="opp2chk"> 相手 3</label></b><span class="meta" id="opp2meta"></span></div><div id="opp2slots"></div></div>
+    </div>
+    <div class="pcard" id="boardWrap"><div class="ph"><b class="tag">BOARD</b><span class="meta">0枚か3〜5枚（残りはランダム）</span></div><div class="slots" id="boardSlots"></div></div>
+    <div class="pcard" id="board2Wrap"><div class="ph"><b class="tag">BOARD 2</b><span class="meta">ダブルボード用</span></div><div class="slots" id="board2Slots"></div></div>
+  </section>
+  <aside class="panel">
+    <div class="pt">RESULTS</div>
+    <button id="runbtn">EQ を計算</button>
+    <div id="prog"><i></i></div>
+    <div id="meta"></div>
+    <div id="results"></div>
+  </aside>
+</main>
+</div>
+<div id="picker"><div class="psheet">
+  <div class="pt2"><span class="tag">CARD PICKER</span><button id="pickClose">閉じる</button></div>
+  <div id="pickGrid"></div>
+</div></div>
+<div id="toast"></div>
+<script>
+
+
+/* ===== embedded equity engine ===== */
+/* ===== MIX GAME equity engine (pure logic; Math.random based Monte Carlo) ===== */
+(function(global){
+"use strict";
+
+// card: {r:2..14 (A=14), s:0..3, id}
+const SUITS = ['s','h','d','c'];
+const RANKS = [2,3,4,5,6,7,8,9,10,11,12,13,14];
+function mkid(r,s){ return (r-2)*4 + s; }
+const FULLDECK = [];
+for(const r of RANKS) for(let s=0;s<4;s++) FULLDECK.push({r:r,s:s,id:mkid(r,s)});
+
+function arrCmp(a,b){ // lexicographic; >0 if a bigger
+  const n=Math.max(a.length,b.length);
+  for(let i=0;i<n;i++){ const x=a[i]||0, y=b[i]||0; if(x!==y) return x-y; }
+  return 0;
+}
+
+// ---- 5-card high evaluator. wheel=true allows A-2-3-4-5 straight. returns [cat,...tb]; bigger=better high
+function rank5(cards, wheel){
+  if(wheel===undefined) wheel=true;
+  const rs = cards.map(c=>c.r).sort((a,b)=>b-a);
+  const suits = cards.map(c=>c.s);
+  const flush = suits.every(s=>s===suits[0]);
+  const uniq = Array.from(new Set(rs)).sort((a,b)=>b-a);
+  let straight=false, sHigh=0;
+  if(uniq.length===5){
+    if(uniq[0]-uniq[4]===4){ straight=true; sHigh=uniq[0]; }
+    else if(wheel && uniq[0]===14 && uniq[1]===5 && uniq[2]===4 && uniq[3]===3 && uniq[4]===2){ straight=true; sHigh=5; }
+  }
+  const cnt={}; rs.forEach(r=>cnt[r]=(cnt[r]||0)+1);
+  const groups = Object.keys(cnt).map(r=>[cnt[r],parseInt(r)]);
+  groups.sort((a,b)=> b[0]-a[0] || b[1]-a[1]);
+  const counts = groups.map(g=>g[0]);
+  const ordered = groups.map(g=>g[1]);
+  let cat;
+  if(straight && flush) cat=8;
+  else if(counts[0]===4) cat=7;
+  else if(counts[0]===3 && counts[1]===2) cat=6;
+  else if(flush) cat=5;
+  else if(straight) cat=4;
+  else if(counts[0]===3) cat=3;
+  else if(counts[0]===2 && counts[1]===2) cat=2;
+  else if(counts[0]===2) cat=1;
+  else cat=0;
+  let tb;
+  if(cat===8||cat===4) tb=[sHigh];
+  else if(cat===5||cat===0) tb=rs;
+  else tb=ordered;
+  return [cat].concat(tb);
+}
+
+// best high of 7 (or any >=5): returns rank array (bigger=better)
+function combos(arr,k){
+  const res=[]; const n=arr.length;
+  const idx=Array.from({length:k},(_,i)=>i);
+  if(k>n) return res;
+  while(true){
+    res.push(idx.map(i=>arr[i]));
+    let i=k-1;
+    while(i>=0 && idx[i]===i+n-k) i--;
+    if(i<0) break;
+    idx[i]++;
+    for(let j=i+1;j<k;j++) idx[j]=idx[j-1]+1;
+  }
+  return res;
+}
+function bestHigh(cards){
+  let best=null;
+  for(const c of combos(cards,5)){
+    const r=rank5(c,true);
+    if(best===null || arrCmp(r,best)>0) best=r;
+  }
+  return best;
+}
+
+// A-5 low 8-or-better from any cards. returns [r,r,r,r,r] desc (smaller=better) or null
+function low8(cards){
+  const set=new Set();
+  for(const c of cards){ const v = c.r===14?1:c.r; if(v<=8) set.add(v); }
+  if(set.size<5) return null;
+  const arr=Array.from(set).sort((a,b)=>a-b).slice(0,5);
+  return arr.sort((a,b)=>b-a);
+}
+
+// Razz: best ace-to-five low (no qualifier) of best 5 of N. returns comparable array (smaller=better)
+function a5key5(five){
+  const rs = five.map(c=> c.r===14?1:c.r);
+  const cnt={}; rs.forEach(r=>cnt[r]=(cnt[r]||0)+1);
+  const counts = Object.values(cnt).sort((a,b)=>b-a);
+  const ordered = rs.slice().sort((a,b)=> (cnt[b]-cnt[a]) || (b-a) );
+  return counts.concat(ordered);
+}
+function razzBest(cards){
+  let best=null;
+  for(const c of combos(cards,5)){
+    const k=a5key5(c);
+    if(best===null || arrCmp(k,best)<0) best=k;
+  }
+  return best;
+}
+
+// 2-7 lowball 5-card: smaller rank5(no-wheel) = better low
+function deuce7(five){ return rank5(five,false); } // compare with arrCmp; smaller better
+
+// Badugi key for any cards: [4-size, ...ranksDesc]; smaller=better
+function badugiKey(cards){
+  for(let k=4;k>=1;k--){
+    let best=null;
+    for(const c of combos(cards,k)){
+      const rr=c.map(x=> x.r===14?1:x.r);
+      const ss=c.map(x=>x.s);
+      if(new Set(rr).size===k && new Set(ss).size===k){
+        const key=rr.slice().sort((a,b)=>b-a);
+        if(best===null || arrCmp(key,best)<0) best=key;
+      }
+    }
+    if(best!==null) return [4-k].concat(best);
+  }
+  return [4,99];
+}
+function bestSub(cards){ // returns the kept cards forming best badugi subset
+  for(let k=4;k>=1;k--){
+    let best=null, bestKey=null;
+    for(const c of combos(cards,k)){
+      const rr=c.map(x=> x.r===14?1:x.r);
+      const ss=c.map(x=>x.s);
+      if(new Set(rr).size===k && new Set(ss).size===k){
+        const key=rr.slice().sort((a,b)=>b-a);
+        if(bestKey===null || arrCmp(key,bestKey)<0){ bestKey=key; best=c.slice(); }
+      }
+    }
+    if(best!==null) return best;
+  }
+  return cards.slice(0,1);
+}
+
+// Omaha exactly 2 of 4 hole + 3 of 5 board
+const HOLEPAIRS=[[0,1],[0,2],[0,3],[1,2],[1,3],[2,3]];
+function omahaHigh(hole, board){
+  const btr = combos(board,3);
+  let best=null;
+  for(const hp of HOLEPAIRS){
+    const h0=hole[hp[0]], h1=hole[hp[1]];
+    for(const t of btr){
+      const r=rank5([h0,h1,t[0],t[1],t[2]],true);
+      if(best===null||arrCmp(r,best)>0) best=r;
+    }
+  }
+  return best;
+}
+function omahaLow8(hole, board){
+  const btr=combos(board,3);
+  let best=null;
+  for(const hp of HOLEPAIRS){
+    const a=hole[hp[0]], b=hole[hp[1]];
+    const ra=a.r===14?1:a.r, rb=b.r===14?1:b.r;
+    if(ra>8||rb>8||ra===rb) continue;
+    for(const t of btr){
+      const tr=t.map(x=> x.r===14?1:x.r);
+      if(tr.some(x=>x>8)) continue;
+      const all=[ra,rb,tr[0],tr[1],tr[2]];
+      if(new Set(all).size<5) continue;
+      const key=all.slice().sort((a,b)=>b-a);
+      if(best===null||arrCmp(key,best)<0) best=key;
+    }
+  }
+  return best;
+}
+
+// ===== ANOTHER-page games: 5-hole Omaha, ace-high Badugi, Super-Stud keep, A-5 5card =====
+const HOLEPAIRS5=[[0,1],[0,2],[0,3],[0,4],[1,2],[1,3],[1,4],[2,3],[2,4],[3,4]];
+function omahaHigh5(hole, board){
+  const btr=combos(board,3); let best=null;
+  for(const hp of HOLEPAIRS5){ const h0=hole[hp[0]], h1=hole[hp[1]];
+    for(const t of btr){ const r=rank5([h0,h1,t[0],t[1],t[2]],true); if(best===null||arrCmp(r,best)>0) best=r; } }
+  return best;
+}
+function omahaLow8_5(hole, board){
+  const btr=combos(board,3); let best=null;
+  for(const hp of HOLEPAIRS5){ const a=hole[hp[0]], b=hole[hp[1]];
+    const ra=a.r===14?1:a.r, rb=b.r===14?1:b.r;
+    if(ra>8||rb>8||ra===rb) continue;
+    for(const t of btr){ const tr=t.map(x=> x.r===14?1:x.r);
+      if(tr.some(x=>x>8)) continue;
+      const all=[ra,rb,tr[0],tr[1],tr[2]];
+      if(new Set(all).size<5) continue;
+      const key=all.slice().sort((a,b)=>b-a);
+      if(best===null||arrCmp(key,best)<0) best=key; } }
+  return best;
+}
+// Badugi with ACE HIGH (Baduecey): ace=14 is the worst card; best badugi = 2-3-4-5
+function badugiKeyHigh(cards){
+  for(let k=4;k>=1;k--){
+    let best=null;
+    for(const c of combos(cards,k)){
+      const rr=c.map(x=>x.r);            // ace stays 14 (high/worst)
+      const ss=c.map(x=>x.s);
+      if(new Set(rr).size===k && new Set(ss).size===k){
+        const key=rr.slice().sort((a,b)=>b-a);
+        if(best===null || arrCmp(key,best)<0) best=key;
+      }
+    }
+    if(best!==null) return [4-k].concat(best);
+  }
+  return [4,99];
+}
+// Super Stud: choose the best 3 of 5 dealt cards for a Stud8 start (heuristic)
+function keepBest3(cards5){
+  let best=null,bestScore=-1e9;
+  for(const c of combos(cards5,3)){
+    const rh=c.map(x=>x.r), low=c.map(x=> x.r===14?1:x.r);
+    const cnt={}; rh.forEach(r=>cnt[r]=(cnt[r]||0)+1);
+    const maxc=Math.max.apply(null,Object.values(cnt));
+    let score;
+    if(maxc===3){ score=90000+rh[0]; }
+    else {
+      const distinctLow=new Set(low.filter(v=>v<=8)).size;
+      if(maxc===1 && distinctLow===3){
+        const sum=low.reduce((a,b)=>a+b,0); const suits=new Set(c.map(x=>x.s)).size;
+        score=70000+(24-sum)*60+(low.indexOf(1)>=0?400:0)+(suits<3?150:0);
+      } else if(maxc===2){
+        let pr=0; for(const r in cnt) if(cnt[r]===2) pr=+r;
+        let sLow=99; c.forEach(x=>{ if(cnt[x.r]===1) sLow=Math.min(sLow, x.r===14?1:x.r); });
+        score=40000+pr*100+(sLow<=8?300:0);
+      } else { score=10000-low.reduce((a,b)=>a+b,0); }
+    }
+    if(score>bestScore){ bestScore=score; best=c; }
+  }
+  return best;
+}
+// Badacey/Baduecey auto-draw keep: lowest 5 distinct ranks (ace low or high)
+function badXKeep(hand, aceHigh){
+  const val=c=> aceHigh ? c.r : (c.r===14?1:c.r);
+  const sorted=hand.slice().sort((a,b)=>val(a)-val(b));
+  const keep=[], seen=new Set();
+  for(const c of sorted){ const v=val(c); if(!seen.has(v)){ seen.add(v); keep.push(c); } if(keep.length===5) break; }
+  return keep;
+}
+function playBadX(start, ndraw, d, di, aceHigh){
+  let hand=start.slice();
+  const val=c=> aceHigh ? c.r : (c.r===14?1:c.r);
+  for(let r=0;r<ndraw;r++){
+    const keep=badXKeep(hand, aceHigh);
+    const hi=keep.length?Math.max.apply(null,keep.map(val)):99;
+    if(keep.length===5 && hi<=8){ hand=keep; continue; }
+    const need=5-keep.length; const drawn=d.slice(di,di+need); di+=need;
+    hand=keep.concat(drawn);
+  }
+  return {hand, di};
+}
+// two always-qualifying low halves (Badacey/Baduecey)
+function splitShare2(aK,bK){
+  let ba=aK[0]; for(const k of aK) if(arrCmp(k,ba)<0) ba=k;
+  let bb=bK[0]; for(const k of bK) if(arrCmp(k,bb)<0) bb=k;
+  const aw=aK.filter(k=>arrCmp(k,ba)===0).length, bw=bK.filter(k=>arrCmp(k,bb)===0).length;
+  const heroA=arrCmp(aK[0],ba)===0, heroB=arrCmp(bK[0],bb)===0;
+  let share=0; if(heroA) share+=0.5/aw; if(heroB) share+=0.5/bw;
+  return {share, scoop:share>0.999, hi:heroA, lo:heroB};
+}
+function resolveSplit2(aK,bK){
+  const s=splitShare2(aK,bK);
+  return {share:s.share, scoop:s.scoop?1:0, partial:(s.share>0&&!s.scoop)?1:0,
+          lose:s.share<=0?1:0, hi:s.hi?1:0, lo:s.lo?1:0};
+}
+
+// ===== Batch 4: A-5 Triple Draw, Razz-deucey/dacey, Double Board O8 =====
+// best 2-7 low of N cards (smaller better)
+function bestDeuce7(cards){ let best=null; for(const c of combos(cards,5)){ const k=deuce7(c); if(best===null||arrCmp(k,best)<0) best=k; } return best; }
+// A-5 draw keep: lowest distinct ranks (ace low); straights/flushes OK
+function keepA5(cards){
+  const byr={};
+  for(const c of cards){ const v=c.r===14?1:c.r; if(!(v in byr)) byr[v]=c; }
+  return Object.values(byr).sort((a,b)=>(a.r===14?1:a.r)-(b.r===14?1:b.r)).slice(0,5);
+}
+function playA5(start, ndraw, deck, di){
+  let cur=keepA5(start);
+  for(let d=0; d<ndraw; d++){
+    if(cur.length===5){ const hi=Math.max.apply(null,cur.map(c=>c.r===14?1:c.r)); if(hi<=8) break;
+      cur=cur.slice().sort((a,b)=>(a.r===14?1:a.r)-(b.r===14?1:b.r)).slice(0,4); }   // break highest, draw 1
+    const need=5-cur.length;
+    if(need>0 && di+need<=deck.length){ cur=keepA5(cur.concat(deck.slice(di,di+need))); di+=need; }
+  }
+  while(cur.length<5 && di<deck.length){ cur=keepA5(cur.concat([deck[di]])); di++; }
+  return {hand:cur.slice(0,5), di};
+}
+function trialA5TD(hero, nopp, ndraw){
+  const d=shuffledDeck(hero); let i=0;
+  let r=playA5(hero,ndraw,d,i); i=r.di; const hf=r.hand;
+  const opps=[];
+  for(let o=0;o<nopp;o++){ const os=d.slice(i,i+5); i+=5; const rr=playA5(os,ndraw,d,i); i=rr.di; opps.push(rr.hand); }
+  const hk=a5key5(hf); const ok=opps.map(a5key5);
+  let ties=0,heroBest=true; for(const k of ok){ const c=arrCmp(k,hk); if(c<0){heroBest=false;} else if(c===0){ties++;} }
+  let share=0; if(heroBest) share=1/(1+ties);
+  return {share, scoop:share>0.999, hi:false, lo:share>0};
+}
+// keep 3 low rainbow cards (Razz-deucey/dacey super-stud selection)
+function keepBest3RB(five){
+  let best=null,bs=-1e9;
+  for(const c of combos(five,3)){
+    const low=c.map(x=>x.r===14?1:x.r);
+    const suits=new Set(c.map(x=>x.s)).size, ranks=new Set(low).size, sum=low.reduce((a,b)=>a+b,0);
+    const score=suits*1000+ranks*800-sum*10;
+    if(score>bs){ bs=score; best=c; }
+  }
+  return best;
+}
+function trialRazzX(hero, nopp, deucey){ // deucey=true -> 2-7 + ace-high badugi; false -> A-5 + ace-low badugi
+  const d=shuffledDeck(hero); let i=0;
+  const hF=keepBest3RB(hero).concat(d.slice(i,i+4)); i+=4;
+  const oF=[]; for(let o=0;o<nopp;o++){ const o5=d.slice(i,i+5); i+=5; oF.push(keepBest3RB(o5).concat(d.slice(i,i+4))); i+=4; }
+  const badK = deucey ? badugiKeyHigh : badugiKey;
+  const lowK = deucey ? bestDeuce7 : razzBest;
+  return splitShare2([badK(hF)].concat(oF.map(badK)), [lowK(hF)].concat(oF.map(lowK)));
+}
+// Double Board Omaha-8: two boards, each worth half, hi/lo split per board
+// Double Board 5-card Omaha Hi-Lo: pot splits HIGH/LOW; each player uses their BEST high
+// across the two boards and their BEST qualifying low across the two boards.
+function bestHighTwo(hole,B1,B2){ const a=omahaHigh5(hole,B1), b=omahaHigh5(hole,B2); return arrCmp(a,b)>=0?a:b; }
+function bestLowTwo(hole,B1,B2){ const a=omahaLow8_5(hole,B1), b=omahaLow8_5(hole,B2);
+  if(a===null) return b; if(b===null) return a; return arrCmp(a,b)<=0?a:b; }
+function trialDBoard8(hero, nopp){ // 5-card hole; best HIGH + best LOW across both boards
+  const d=shuffledDeck(hero); let i=0;
+  const B1=d.slice(i,i+5); i+=5; const B2=d.slice(i,i+5); i+=5;
+  const opps=[]; for(let o=0;o<nopp;o++){ opps.push(d.slice(i,i+5)); i+=5; }
+  const highs=[bestHighTwo(hero,B1,B2)].concat(opps.map(o=>bestHighTwo(o,B1,B2)));
+  const lows =[bestLowTwo(hero,B1,B2)].concat(opps.map(o=>bestLowTwo(o,B1,B2)));
+  return splitShare(highs, lows);
+}
+
+// ===== Batch 3: Archie, Super Stud NQ, Drawmaha (Hi / 2-7) =====
+// generic two-sided split where BOTH sides always have a winner (no qualifier)
+function sideShare(keys, low){
+  let b=keys[0]; for(const k of keys){ const c=arrCmp(k,b); if(low? c<0 : c>0) b=k; }
+  const winners=keys.filter(k=>arrCmp(k,b)===0).length;
+  const heroWin=arrCmp(keys[0],b)===0;
+  return {heroWin, part: heroWin?0.5/winners:0};
+}
+function splitTwoBool(aK,lowA,bK,lowB){ // EQUITY shape
+  const a=sideShare(aK,lowA), b=sideShare(bK,lowB); const share=a.part+b.part;
+  return {share, scoop:share>0.999, hi:a.heroWin, lo:b.heroWin};
+}
+function splitTwoNum(aK,lowA,bK,lowB){ // VS shape
+  const a=sideShare(aK,lowA), b=sideShare(bK,lowB); const share=a.part+b.part;
+  return {share, scoop:share>0.999?1:0, partial:(share>0&&share<=0.999)?1:0,
+          lose:share<=0?1:0, hi:a.heroWin?1:0, lo:b.heroWin?1:0};
+}
+// Archie high qualifier: pair of nines or better
+function archieHQ(k){ return k[0]>=2 || (k[0]===1 && k[1]>=9); }
+function _archieCore(highKeys, lowKeys){ // index0=hero; highKeys=rank5 arrays, lowKeys=low8 or null
+  const HQ=highKeys.map(archieHQ), LQ=lowKeys.map(k=>k!==null);
+  const anyH=HQ.some(Boolean), anyL=LQ.some(Boolean);
+  let bH=null; highKeys.forEach((k,i)=>{ if(HQ[i] && (bH===null||arrCmp(k,bH)>0)) bH=k; });
+  const HW=highKeys.map((k,i)=> HQ[i] && bH!==null && arrCmp(k,bH)===0);
+  let bL=null; lowKeys.forEach((k,i)=>{ if(LQ[i] && (bL===null||arrCmp(k,bL)<0)) bL=k; });
+  const LW=lowKeys.map((k,i)=> LQ[i] && bL!==null && arrCmp(k,bL)===0);
+  const nHW=HW.filter(Boolean).length, nLW=LW.filter(Boolean).length, n=highKeys.length;
+  let share=0, hi=false, lo=false;
+  if(anyH && anyL){ if(HW[0]){share+=0.5/nHW; hi=true;} if(LW[0]){share+=0.5/nLW; lo=true;} }
+  else if(anyH){ if(HW[0]){share+=1/nHW; hi=true;} }
+  else if(anyL){ if(LW[0]){share+=1/nLW; lo=true;} }
+  else { share+=1/n; }   // nobody qualifies -> even chop among remaining
+  return {share, hi, lo};
+}
+function resolveArchieBool(highKeys, lowKeys){ const r=_archieCore(highKeys,lowKeys);
+  return {share:r.share, scoop:r.share>0.999, hi:r.hi, lo:r.lo}; }
+function resolveArchie(highKeys, lowKeys){ const r=_archieCore(highKeys,lowKeys);
+  return {share:r.share, scoop:r.share>0.999?1:0, partial:(r.share>0&&r.share<=0.999)?1:0,
+          lose:r.share<=0?1:0, hi:r.hi?1:0, lo:r.lo?1:0}; }
+// Archie auto-draw keep policy (high-lean vs low-lean)
+function archieKeep(hand){
+  const seen=new Set(), low=[];
+  hand.slice().sort((a,b)=>(a.r===14?1:a.r)-(b.r===14?1:b.r)).forEach(c=>{
+    const v=c.r===14?1:c.r; if(v<=8 && !seen.has(v)){ seen.add(v); low.push(c);} });
+  const byR={}; hand.forEach(c=>(byR[c.r]=byR[c.r]||[]).push(c));
+  let pair=null,pr=0; for(const r in byR){ if(byR[r].length>=2 && +r>pr){ pr=+r; pair=byR[r].slice(0,Math.min(3,byR[r].length)); } }
+  const bySuit={}; hand.forEach(c=>(bySuit[c.s]=bySuit[c.s]||[]).push(c));
+  let flush4=null; for(const s in bySuit){ if(bySuit[s].length>=4) flush4=bySuit[s].slice(0,4); }
+  const lowGood = low.length>=4 || (low.length===3 && low.every(c=>(c.r===14?1:c.r)<=7));
+  if(flush4) return flush4;
+  if(lowGood && !(pair && pr>=9)) return low;
+  if(pair) return pair;
+  if(low.length>=3) return low;
+  return hand.slice().sort((a,b)=>(a.r===14?1:a.r)-(b.r===14?1:b.r)).slice(0,3);
+}
+
+// ---- draw models ----
+function keep27(cards){
+  const byrank={};
+  for(const c of cards){ const r=c.r; if(!(r in byrank) || c.r<byrank[r].r) byrank[r]=c; }
+  let cand=Object.values(byrank).sort((a,b)=>a.r-b.r);
+  cand=cand.filter(c=>c.r<=8).slice(0,5);
+  if(cand.length===5){ const cat=deuce7(cand)[0]; if(cat===4||cat===5||cat===8) cand=cand.slice(0,4); }
+  return cand;
+}
+function play27(start, ndraw, deck, di){
+  let cur=keep27(start);
+  for(let d=0; d<ndraw; d++){
+    if(cur.length===5 && deuce7(cur)[0]===0) break;
+    const need=5-cur.length;
+    if(need>0 && di+need<=deck.length){ cur=keep27(cur.concat(deck.slice(di,di+need))); di+=need; }
+  }
+  while(cur.length<5 && di<deck.length){ cur=keep27(cur.concat([deck[di]])); di++; }
+  return {hand:cur.slice(0,5), di:di};
+}
+function playBadugi(start, ndraw, deck, di){
+  let cur=start.slice();
+  for(let d=0; d<ndraw; d++){
+    const keep=bestSub(cur);
+    if(keep.length===4) break;
+    const need=4-keep.length;
+    if(di+need<=deck.length){ cur=keep.concat(deck.slice(di,di+need)); di+=need; }
+  }
+  return {hand:cur, di:di};
+}
+
+// ---- deck deal helpers ----
+function shuffledDeck(exclude){
+  const ex=new Set(exclude.map(c=>c.id));
+  const d=[]; for(const c of FULLDECK) if(!ex.has(c.id)) d.push(c);
+  for(let i=d.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; const t=d[i]; d[i]=d[j]; d[j]=t; }
+  return d;
+}
+
+// ---- per-trial functions; return {share, scoop, hi, lo} ----
+function trialStudHigh(hero, nopp){
+  const d=shuffledDeck(hero); let i=0;
+  const players=[hero.concat(d.slice(i,i+4))]; i+=4;
+  for(let o=0;o<nopp;o++){ players.push(d.slice(i,i+7)); i+=7; }
+  const hs=players.map(bestHigh);
+  let best=hs[0], wc=0; for(const h of hs){ if(arrCmp(h,best)>0) best=h; }
+  const winners=[]; hs.forEach((h,k)=>{ if(arrCmp(h,best)===0) winners.push(k); });
+  const share = winners.includes(0)? 1/winners.length : 0;
+  return {share, scoop: share>0.999, hi:share>0, lo:false};
+}
+function trialRazz(hero, nopp){
+  const d=shuffledDeck(hero); let i=0;
+  const players=[hero.concat(d.slice(i,i+4))]; i+=4;
+  for(let o=0;o<nopp;o++){ players.push(d.slice(i,i+7)); i+=7; }
+  const ls=players.map(razzBest);
+  let best=ls[0]; for(const l of ls){ if(arrCmp(l,best)<0) best=l; }
+  const winners=[]; ls.forEach((l,k)=>{ if(arrCmp(l,best)===0) winners.push(k); });
+  const share = winners.includes(0)? 1/winners.length : 0;
+  return {share, scoop:share>0.999, hi:false, lo:share>0};
+}
+function trialStud8(hero, nopp){
+  const d=shuffledDeck(hero); let i=0;
+  const players=[hero.concat(d.slice(i,i+4))]; i+=4;
+  for(let o=0;o<nopp;o++){ players.push(d.slice(i,i+7)); i+=7; }
+  return splitShare(players.map(bestHigh), players.map(low8));
+}
+function trialHoldem(hero, nopp){
+  const d=shuffledDeck(hero); let i=0;
+  const board=d.slice(i,i+5); i+=5;
+  const opps=[]; for(let o=0;o<nopp;o++){ opps.push(d.slice(i,i+2)); i+=2; }
+  const hh=bestHigh(hero.concat(board));
+  const oh=opps.map(o=>bestHigh(o.concat(board)));
+  let best=hh; for(const h of oh){ if(arrCmp(h,best)>0) best=h; }
+  let ties=0; for(const h of oh){ if(arrCmp(h,best)===0) ties++; }
+  const heroBest = arrCmp(hh,best)===0;
+  let share=0; if(heroBest) share=1/(1+ties);
+  return {share, scoop:share>0.999, hi:share>0, lo:false};
+}
+function trialPLO(hero, nopp){
+  const d=shuffledDeck(hero); let i=0;
+  const board=d.slice(i,i+5); i+=5;
+  const opps=[]; for(let o=0;o<nopp;o++){ opps.push(d.slice(i,i+4)); i+=4; }
+  const hh=omahaHigh(hero,board);
+  const oh=opps.map(o=>omahaHigh(o,board));
+  let best=hh; for(const h of oh){ if(arrCmp(h,best)>0) best=h; }
+  let ties=0; for(const h of oh){ if(arrCmp(h,best)===0) ties++; }
+  const heroBest=arrCmp(hh,best)===0;
+  let share=0; if(heroBest) share=1/(1+ties);
+  return {share, scoop:share>0.999, hi:share>0, lo:false};
+}
+function trialFLO8(hero, nopp){
+  const d=shuffledDeck(hero); let i=0;
+  const board=d.slice(i,i+5); i+=5;
+  const players=[hero]; for(let o=0;o<nopp;o++){ players.push(d.slice(i,i+4)); i+=4; }
+  return splitShare(players.map(p=>omahaHigh(p,board)), players.map(p=>omahaLow8(p,board)));
+}
+function splitShare(hs, ls){
+  let bh=hs[0]; for(const h of hs){ if(arrCmp(h,bh)>0) bh=h; }
+  const hw=[]; hs.forEach((h,k)=>{ if(arrCmp(h,bh)===0) hw.push(k); });
+  const qual=[]; ls.forEach((l,k)=>{ if(l!==null) qual.push(k); });
+  let share=0, hi=false, lo=false;
+  if(qual.length){
+    let bl=null; for(const k of qual){ if(bl===null||arrCmp(ls[k],bl)<0) bl=ls[k]; }
+    const lw=qual.filter(k=>arrCmp(ls[k],bl)===0);
+    if(hw.includes(0)){ share+=0.5/hw.length; hi=true; }
+    if(lw.includes(0)){ share+=0.5/lw.length; lo=true; }
+  } else {
+    if(hw.includes(0)){ share+=1/hw.length; hi=true; }
+  }
+  return {share, scoop:share>0.999, hi, lo};
+}
+function trialDraw27(hero, nopp, ndraw){
+  const d=shuffledDeck(hero); let i=0;
+  let r=play27(hero,ndraw,d,i); i=r.di; const hf=r.hand;
+  const opps=[];
+  for(let o=0;o<nopp;o++){ const os=d.slice(i,i+5); i+=5; const rr=play27(os,ndraw,d,i); i=rr.di; opps.push(rr.hand); }
+  const hk=deuce7(hf); const ok=opps.map(deuce7);
+  let best=hk; for(const k of ok){ if(arrCmp(k,best)<0) best=k; }
+  let ties=0,heroBest=true; for(const k of ok){ const c=arrCmp(k,hk); if(c<0){heroBest=false;} else if(c===0){ties++;} }
+  let share=0; if(heroBest) share=1/(1+ties);
+  return {share, scoop:share>0.999, hi:false, lo:share>0};
+}
+function trialBadugi(hero, nopp, ndraw){
+  const d=shuffledDeck(hero); let i=0;
+  let r=playBadugi(hero,ndraw,d,i); i=r.di; const hf=r.hand;
+  const opps=[];
+  for(let o=0;o<nopp;o++){ const os=d.slice(i,i+4); i+=4; const rr=playBadugi(os,ndraw,d,i); i=rr.di; opps.push(rr.hand); }
+  const hk=badugiKey(hf); const ok=opps.map(badugiKey);
+  let best=hk; for(const k of ok){ if(arrCmp(k,best)<0) best=k; }
+  let ties=0,heroBest=true; for(const k of ok){ const c=arrCmp(k,hk); if(c<0){heroBest=false;} else if(c===0){ties++;} }
+  let share=0; if(heroBest) share=1/(1+ties);
+  return {share, scoop:share>0.999, hi:false, lo:share>0};
+}
+
+function oneTrial(kind, hero, nopp, draws){
+  switch(kind){
+    case 'stud8': return trialStud8(hero,nopp);
+    case 'studhi': return trialStudHigh(hero,nopp);
+    case 'razz': return trialRazz(hero,nopp);
+    case 'flo8': return trialFLO8(hero,nopp);
+    case 'plo': return trialPLO(hero,nopp);
+    case 'flh': return trialHoldem(hero,nopp);
+    case 'draw27': return trialDraw27(hero,nopp,draws);
+    case 'badugi': return trialBadugi(hero,nopp,draws);
+    case 'bigo': return trialBigO(hero,nopp);
+    case 'sstud8': return trialSStud8(hero,nopp);
+    case 'badacey': return trialBadacey(hero,nopp,draws);
+    case 'baduecey': return trialBaduecey(hero,nopp,draws);
+    case 'archie': return trialArchie(hero,nopp,draws);
+    case 'ari': return trialAri(hero,nopp,draws);
+    case 'sstud8nq': return trialSStud8NQ(hero,nopp);
+    case 'dramahaHi': return trialDramaha(hero,nopp,false);
+    case 'dramaha27': return trialDramaha(hero,nopp,true);
+    case 'dramahaBadugi': return trialDramahaB(hero,nopp);
+    case 'a5td': return trialA5TD(hero,nopp,draws);
+    case 'razzdeucey': return trialRazzX(hero,nopp,true);
+    case 'razzdacey': return trialRazzX(hero,nopp,false);
+    case 'dboard8': return trialDBoard8(hero,nopp);
+    case 'dboardBigO': return trialDBoardBigO(hero,nopp);
+    case 'actionrazz': return trialActionRazz(hero,nopp);
+  }
+}
+// ----- Super Action Razz: A-5 low, but a face (J/Q/K) anywhere in 7 cards QUALIFIES;
+//        any qualified hand beats any non-qualified; if none qualify, lowest A-5 wins -----
+function hasFace(cards){ return cards.some(c=>c.r>=11 && c.r<=13); }
+function keepActionRazz(five){ // keep 3 lowest non-face (rely on drawing paint ~70%)
+  const av=c=>c.r===14?1:c.r;
+  const byVal=five.slice().sort((a,b)=>av(a)-av(b));
+  const lows=byVal.filter(c=>av(c)<=10);
+  return (lows.length>=3? lows : byVal).slice(0,3);
+}
+function _actionCore(keys, quals){ // keys=razzBest arrays (low,smaller better); quals=bool; index0 hero
+  const anyQ=quals.some(Boolean);
+  const elig=keys.map((k,i)=> anyQ? quals[i] : true);
+  let best=null; keys.forEach((k,i)=>{ if(elig[i] && (best===null||arrCmp(k,best)<0)) best=k; });
+  const winners=keys.filter((k,i)=>elig[i] && arrCmp(k,best)===0).length;
+  const heroWin = elig[0] && arrCmp(keys[0],best)===0;
+  return {share: heroWin? 1/winners : 0, winners, heroWin};
+}
+function trialActionRazz(hero, nopp){
+  const d=shuffledDeck(hero); let i=0;
+  const hF=keepActionRazz(hero).concat(d.slice(i,i+4)); i+=4;
+  const oF=[]; for(let o=0;o<nopp;o++){ const o5=d.slice(i,i+5); i+=5; oF.push(keepActionRazz(o5).concat(d.slice(i,i+4))); i+=4; }
+  const keys=[razzBest(hF)].concat(oF.map(razzBest));
+  const quals=[hasFace(hF)].concat(oF.map(hasFace));
+  const r=_actionCore(keys,quals);
+  return {share:r.share, scoop:r.share>0.999, hi:false, lo:r.share>0};
+}
+function trialDBoardBigO(hero, nopp){ // double board 5-card Omaha HIGH x HIGH (each board high only)
+  const d=shuffledDeck(hero); let i=0;
+  const B1=d.slice(i,i+5); i+=5; const B2=d.slice(i,i+5); i+=5;
+  const opps=[]; for(let o=0;o<nopp;o++){ opps.push(d.slice(i,i+5)); i+=5; }
+  const boardHi=(B)=>{ const hs=[omahaHigh5(hero,B)].concat(opps.map(o=>omahaHigh5(o,B)));
+    let bh=hs[0]; for(const h of hs) if(arrCmp(h,bh)>0) bh=h;
+    const winners=hs.filter(h=>arrCmp(h,bh)===0).length;
+    return arrCmp(hs[0],bh)===0 ? 1/winners : 0; };
+  const a=boardHi(B1), b=boardHi(B2);
+  const share=0.5*a+0.5*b;
+  return {share, scoop:share>0.999, hi:(a>0), lo:(b>0)};   // hi=won board1, lo=won board2
+}
+function trialDramahaB(hero, nopp){ // PAT: best Badugi (low) split with Omaha high
+  const d=shuffledDeck(hero); let i=0;
+  const board=d.slice(i,i+5); i+=5;
+  const opps=[]; for(let o=0;o<nopp;o++){ opps.push(d.slice(i,i+5)); i+=5; }
+  const drawK=[badugiKey(hero)].concat(opps.map(badugiKey));
+  const omaK=[omahaHigh5(hero,board)].concat(opps.map(o=>omahaHigh5(o,board)));
+  return splitTwoBool(drawK, true, omaK, false);
+}
+function trialAri(hero, nopp, ndraw){ // Archie + 1 community card (HIGH only)
+  const d=shuffledDeck(hero); let i=0;
+  const comm=d[i]; i+=1;
+  function play(start){ let h=start.slice(); for(let r=0;r<ndraw;r++){ const keep=archieKeep(h); const need=5-keep.length; const drawn=d.slice(i,i+need); i+=need; h=keep.concat(drawn);} return h; }
+  const hf=play(hero); const opps=[]; for(let o=0;o<nopp;o++){ const os=d.slice(i,i+5); i+=5; opps.push(play(os)); }
+  return resolveArchieBool([bestHigh(hf.concat([comm]))].concat(opps.map(o=>bestHigh(o.concat([comm])))),
+                           [low8(hf)].concat(opps.map(low8)));
+}
+function trialArchie(hero, nopp, ndraw){
+  const d=shuffledDeck(hero); let i=0;
+  function play(start){ let h=start.slice(); for(let r=0;r<ndraw;r++){ const keep=archieKeep(h); const need=5-keep.length; const drawn=d.slice(i,i+need); i+=need; h=keep.concat(drawn);} return h; }
+  const hf=play(hero); const opps=[]; for(let o=0;o<nopp;o++){ const os=d.slice(i,i+5); i+=5; opps.push(play(os)); }
+  return resolveArchieBool([rank5(hf,true)].concat(opps.map(o=>rank5(o,true))),
+                           [low8(hf)].concat(opps.map(low8)));
+}
+function trialSStud8NQ(hero, nopp){
+  const d=shuffledDeck(hero); let i=0;
+  const oppDealt=[]; for(let o=0;o<nopp;o++){ oppDealt.push(d.slice(i,i+5)); i+=5; }
+  const hFull=keepBest3(hero).concat(d.slice(i,i+4)); i+=4;
+  const oFull=oppDealt.map(o5=>{ const f=keepBest3(o5).concat(d.slice(i,i+4)); i+=4; return f; });
+  return splitTwoBool([bestHigh(hFull)].concat(oFull.map(bestHigh)), false,
+                      [razzBest(hFull)].concat(oFull.map(razzBest)), true);
+}
+function trialDramaha(hero, nopp, low){ // PAT model: draw side + Omaha high; full random board
+  const d=shuffledDeck(hero); let i=0;
+  const board=d.slice(i,i+5); i+=5;
+  const opps=[]; for(let o=0;o<nopp;o++){ opps.push(d.slice(i,i+5)); i+=5; }
+  const drawK=[low?deuce7(hero):rank5(hero,true)].concat(opps.map(o=> low?deuce7(o):rank5(o,true)));
+  const omaK=[omahaHigh5(hero,board)].concat(opps.map(o=>omahaHigh5(o,board)));
+  return splitTwoBool(drawK, low, omaK, false);
+}
+function trialBigO(hero, nopp){
+  const d=shuffledDeck(hero); let i=0;
+  const board=d.slice(i,i+5); i+=5;
+  const opps=[]; for(let o=0;o<nopp;o++){ opps.push(d.slice(i,i+5)); i+=5; }
+  return splitShare([omahaHigh5(hero,board)].concat(opps.map(o=>omahaHigh5(o,board))),
+                    [omahaLow8_5(hero,board)].concat(opps.map(o=>omahaLow8_5(o,board))));
+}
+function trialSStud8(hero, nopp){
+  const d=shuffledDeck(hero); let i=0;
+  const oppDealt=[]; for(let o=0;o<nopp;o++){ oppDealt.push(d.slice(i,i+5)); i+=5; }
+  const hFull=keepBest3(hero).concat(d.slice(i,i+4)); i+=4;
+  const oFull=oppDealt.map(o5=>{ const f=keepBest3(o5).concat(d.slice(i,i+4)); i+=4; return f; });
+  return splitShare([bestHigh(hFull)].concat(oFull.map(bestHigh)), [low8(hFull)].concat(oFull.map(low8)));
+}
+function trialBadacey(hero, nopp, ndraw){
+  const d=shuffledDeck(hero); let i=0;
+  let r=playBadX(hero,ndraw,d,i,false); i=r.di; const hf=r.hand;
+  const opps=[]; for(let o=0;o<nopp;o++){ const os=d.slice(i,i+5); i+=5; const rr=playBadX(os,ndraw,d,i,false); i=rr.di; opps.push(rr.hand); }
+  return splitShare2([badugiKey(hf)].concat(opps.map(badugiKey)), [a5key5(hf)].concat(opps.map(a5key5)));
+}
+function trialBaduecey(hero, nopp, ndraw){
+  const d=shuffledDeck(hero); let i=0;
+  let r=playBadX(hero,ndraw,d,i,true); i=r.di; const hf=r.hand;
+  const opps=[]; for(let o=0;o<nopp;o++){ const os=d.slice(i,i+5); i+=5; const rr=playBadX(os,ndraw,d,i,true); i=rr.di; opps.push(rr.hand); }
+  return splitShare2([badugiKeyHigh(hf)].concat(opps.map(badugiKeyHigh)), [deuce7(hf)].concat(opps.map(deuce7)));
+}
+
+/* ===== VS-HAND: specified opponents / board / one draw ===== */
+function resolveHigh(heroVal, oppVals){
+  let best=heroVal; for(const v of oppVals) if(arrCmp(v,best)>0) best=v;
+  const heroBest=arrCmp(heroVal,best)===0;
+  if(!heroBest) return {share:0,win:0,tie:0,lose:1};
+  const co=oppVals.filter(v=>arrCmp(v,best)===0).length;
+  const share=1/(1+co);
+  return {share, win:co===0?1:0, tie:co===0?0:1, lose:0};
+}
+function resolveLow(heroVal, oppVals){
+  let best=heroVal; for(const v of oppVals) if(arrCmp(v,best)<0) best=v;
+  const heroBest=arrCmp(heroVal,best)===0;
+  if(!heroBest) return {share:0,win:0,tie:0,lose:1};
+  const co=oppVals.filter(v=>arrCmp(v,best)===0).length;
+  const share=1/(1+co);
+  return {share, win:co===0?1:0, tie:co===0?0:1, lose:0};
+}
+function resolveSplit(highs, lows){ // index0 = hero
+  let bh=highs[0]; for(const h of highs) if(arrCmp(h,bh)>0) bh=h;
+  const hw=[]; highs.forEach((h,k)=>{ if(arrCmp(h,bh)===0) hw.push(k); });
+  const qual=[]; lows.forEach((l,k)=>{ if(l!==null) qual.push(k); });
+  let share=0, hi=false, lo=false;
+  if(qual.length){
+    let bl=null; for(const k of qual){ if(bl===null||arrCmp(lows[k],bl)<0) bl=lows[k]; }
+    const lw=qual.filter(k=>arrCmp(lows[k],bl)===0);
+    if(hw.includes(0)){ share+=0.5/hw.length; hi=true; }
+    if(lw.includes(0)){ share+=0.5/lw.length; lo=true; }
+  } else {
+    if(hw.includes(0)){ share+=1/hw.length; hi=true; }
+  }
+  const scoop=share>0.999;
+  const partial=share>0 && !scoop;
+  return {share, scoop:scoop?1:0, partial:partial?1:0, lose:(share<=0)?1:0,
+          hi:hi?1:0, lo:lo?1:0};
+}
+/* ---- multi-draw deck (stub + muck with reshuffle) ---- */
+function makeStub(exclude){
+  const ex=new Set(exclude.map(c=>c.id));
+  const d=[]; for(const c of FULLDECK) if(!ex.has(c.id)) d.push(c);
+  for(let i=d.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; const t=d[i]; d[i]=d[j]; d[j]=t; }
+  return {cards:d, muck:[], pos:0};
+}
+function stubDraw(stub,n){
+  const out=[];
+  for(let k=0;k<n;k++){
+    if(stub.pos>=stub.cards.length){
+      if(stub.muck.length===0) break;
+      stub.cards=stub.muck; stub.muck=[]; stub.pos=0;
+      for(let i=stub.cards.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; const t=stub.cards[i]; stub.cards[i]=stub.cards[j]; stub.cards[j]=t; }
+    }
+    out.push(stub.cards[stub.pos++]);
+  }
+  return out;
+}
+function playDraws(kind, hands, firstDiscs, ndraws, stub){
+  const finals=[];
+  for(let p=0;p<hands.length;p++){
+    const disc=firstDiscs[p]||[];
+    const kept=hands[p].filter((c,ix)=>disc.indexOf(ix)<0);
+    const thrown=hands[p].filter((c,ix)=>disc.indexOf(ix)>=0);
+    const drawn=stubDraw(stub, thrown.length);
+    finals[p]=kept.concat(drawn);
+    for(const c of thrown) stub.muck.push(c);
+  }
+  for(let r=1;r<ndraws;r++){
+    for(let p=0;p<finals.length;p++){
+      if(kind==='badugi'){
+        const keep=bestSub(finals[p]); if(keep.length===4) continue;
+        const need=4-keep.length; const drawn=stubDraw(stub,need);
+        const ids=new Set(keep.map(c=>c.id)); const thrown=finals[p].filter(c=>!ids.has(c.id));
+        for(const c of thrown) stub.muck.push(c);
+        finals[p]=keep.concat(drawn);
+      } else if(kind==='badacey'||kind==='baduecey'){
+        const aceHigh=(kind==='baduecey');
+        const val=c=> aceHigh ? c.r : (c.r===14?1:c.r);
+        const keep=badXKeep(finals[p], aceHigh);
+        const hi=keep.length?Math.max.apply(null,keep.map(val)):99;
+        if(keep.length===5 && hi<=8){ finals[p]=keep; continue; }
+        const need=5-keep.length; const drawn=stubDraw(stub,need);
+        const ids=new Set(keep.map(c=>c.id)); const thrown=finals[p].filter(c=>!ids.has(c.id));
+        for(const c of thrown) stub.muck.push(c);
+        finals[p]=keep.concat(drawn);
+      } else if(kind==='archie'||kind==='ari'){
+        const keep=archieKeep(finals[p]); if(keep.length>=5){ finals[p]=keep.slice(0,5); continue; }
+        const need=5-keep.length; const drawn=stubDraw(stub,need);
+        const ids=new Set(keep.map(c=>c.id)); const thrown=finals[p].filter(c=>!ids.has(c.id));
+        for(const c of thrown) stub.muck.push(c);
+        finals[p]=keep.concat(drawn);
+      } else if(kind==='a5td'){
+        let keep=keepA5(finals[p]);
+        if(keep.length===5){ const hi=Math.max.apply(null,keep.map(c=>c.r===14?1:c.r)); if(hi<=8){ finals[p]=keep; continue; }
+          keep=keep.slice().sort((a,b)=>(a.r===14?1:a.r)-(b.r===14?1:b.r)).slice(0,4); }
+        const need=5-keep.length; const drawn=stubDraw(stub,need);
+        const ids=new Set(keep.map(c=>c.id)); const thrown=finals[p].filter(c=>!ids.has(c.id));
+        for(const c of thrown) stub.muck.push(c);
+        finals[p]=keepA5(keep.concat(drawn));
+        while(finals[p].length<5){ finals[p]=keepA5(finals[p].concat(stubDraw(stub,1))); }
+      } else {
+        const keep=keep27(finals[p]);
+        if(keep.length===5 && deuce7(keep)[0]===0){ finals[p]=keep; continue; }
+        const need=5-keep.length; const drawn=stubDraw(stub,need);
+        const ids=new Set(keep.map(c=>c.id)); const thrown=finals[p].filter(c=>!ids.has(c.id));
+        for(const c of thrown) stub.muck.push(c);
+        finals[p]=keep.concat(drawn);
+      }
+    }
+  }
+  return finals;
+}
+
+function vsOneTrial(cfg){
+  const kind=cfg.kind, hero=cfg.hero, opps=cfg.opps||[];
+  if(kind==='stud8'||kind==='studhi'||kind==='razz'){
+    let ex=hero.slice(); opps.forEach(o=>ex=ex.concat(o));
+    const d=shuffledDeck(ex); let i=0;
+    const H=hero.concat(d.slice(i,i+7-hero.length)); i+=7-hero.length;
+    const O=opps.map(o=>{ const x=o.concat(d.slice(i,i+7-o.length)); i+=7-o.length; return x; });
+    if(kind==='studhi') return resolveHigh(bestHigh(H), O.map(bestHigh));
+    if(kind==='razz')   return resolveLow(razzBest(H), O.map(razzBest));
+    return resolveSplit([bestHigh(H)].concat(O.map(bestHigh)), [low8(H)].concat(O.map(low8)));
+  }
+  if(kind==='flh'||kind==='plo'||kind==='flo8'||kind==='bigo'||kind==='dramahaHi'||kind==='dramaha27'||kind==='dramahaBadugi'){
+    const bd=cfg.board||[];
+    let ex=hero.slice(); opps.forEach(o=>ex=ex.concat(o)); ex=ex.concat(bd);
+    const d=shuffledDeck(ex); let i=0;
+    const B=bd.concat(d.slice(i,i+5-bd.length)); i+=5-bd.length;
+    if(kind==='flh') return resolveHigh(bestHigh(hero.concat(B)), opps.map(o=>bestHigh(o.concat(B))));
+    if(kind==='plo') return resolveHigh(omahaHigh(hero,B), opps.map(o=>omahaHigh(o,B)));
+    if(kind==='bigo') return resolveSplit([omahaHigh5(hero,B)].concat(opps.map(o=>omahaHigh5(o,B))),
+                        [omahaLow8_5(hero,B)].concat(opps.map(o=>omahaLow8_5(o,B))));
+    if(kind==='dramahaBadugi'){
+      const drawK=[badugiKey(hero)].concat(opps.map(badugiKey));
+      const omaK=[omahaHigh5(hero,B)].concat(opps.map(o=>omahaHigh5(o,B)));
+      return splitTwoNum(drawK, true, omaK, false);
+    }
+    if(kind==='dramahaHi'||kind==='dramaha27'){
+      const low=(kind==='dramaha27');
+      const drawK=[low?deuce7(hero):rank5(hero,true)].concat(opps.map(o=> low?deuce7(o):rank5(o,true)));
+      const omaK=[omahaHigh5(hero,B)].concat(opps.map(o=>omahaHigh5(o,B)));
+      return splitTwoNum(drawK, low, omaK, false);
+    }
+    return resolveSplit([omahaHigh(hero,B)].concat(opps.map(o=>omahaHigh(o,B))),
+                        [omahaLow8(hero,B)].concat(opps.map(o=>omahaLow8(o,B))));
+  }
+  if(kind==='sstud8'||kind==='sstud8nq'){
+    let ex=hero.slice(); opps.forEach(o=>ex=ex.concat(o));
+    const d=shuffledDeck(ex); let i=0;
+    const H=hero.concat(d.slice(i,i+7-hero.length)); i+=7-hero.length;
+    const O=opps.map(o=>{ const f=o.concat(d.slice(i,i+7-o.length)); i+=7-o.length; return f; });
+    if(kind==='sstud8nq') return splitTwoNum([bestHigh(H)].concat(O.map(bestHigh)), false,
+                                             [razzBest(H)].concat(O.map(razzBest)), true);
+    return resolveSplit([bestHigh(H)].concat(O.map(bestHigh)), [low8(H)].concat(O.map(low8)));
+  }
+  if(kind==='razzdeucey'||kind==='razzdacey'){
+    const deucey=(kind==='razzdeucey');
+    let ex=hero.slice(); opps.forEach(o=>ex=ex.concat(o));
+    const d=shuffledDeck(ex); let i=0;
+    const H=hero.concat(d.slice(i,i+7-hero.length)); i+=7-hero.length;
+    const O=opps.map(o=>{ const f=o.concat(d.slice(i,i+7-o.length)); i+=7-o.length; return f; });
+    const badK=deucey?badugiKeyHigh:badugiKey, lowK=deucey?bestDeuce7:razzBest;
+    return resolveSplit2([badK(H)].concat(O.map(badK)), [lowK(H)].concat(O.map(lowK)));
+  }
+  if(kind==='actionrazz'){
+    let ex=hero.slice(); opps.forEach(o=>ex=ex.concat(o));
+    const d=shuffledDeck(ex); let i=0;
+    const H=hero.concat(d.slice(i,i+7-hero.length)); i+=7-hero.length;
+    const O=opps.map(o=>{ const f=o.concat(d.slice(i,i+7-o.length)); i+=7-o.length; return f; });
+    const keys=[razzBest(H)].concat(O.map(razzBest));
+    const quals=[hasFace(H)].concat(O.map(hasFace));
+    const r=_actionCore(keys,quals);
+    return {share:r.share, win:(r.heroWin&&r.winners===1)?1:0, tie:(r.heroWin&&r.winners>1)?1:0, lose:r.heroWin?0:1};
+  }
+  if(kind==='dboard8'||kind==='dboardBigO'){
+    const bd1=(cfg.board||[]), bd2=(cfg.board2||[]);
+    let ex=hero.slice(); opps.forEach(o=>ex=ex.concat(o)); ex=ex.concat(bd1,bd2);
+    const d=shuffledDeck(ex); let i=0;
+    const B1=bd1.concat(d.slice(i,i+5-bd1.length)); i+=5-bd1.length;
+    const B2=bd2.concat(d.slice(i,i+5-bd2.length)); i+=5-bd2.length;
+    if(kind==='dboardBigO'){   // HIGH x HIGH (5-card hole), half per board
+      const hiB=(B)=>resolveHigh(omahaHigh5(hero,B), opps.map(o=>omahaHigh5(o,B)));
+      const a=hiB(B1), b=hiB(B2); const share=0.5*a.share+0.5*b.share;
+      return {share, scoop:share>0.999?1:0, partial:(share>0&&share<=0.999)?1:0,
+              lose:share<=0?1:0, hi:a.share>0?1:0, lo:b.share>0?1:0};
+    }
+    // dboard8: best HIGH + best LOW across BOTH boards, single hi/lo split (5-card hole)
+    const highs=[bestHighTwo(hero,B1,B2)].concat(opps.map(o=>bestHighTwo(o,B1,B2)));
+    const lows =[bestLowTwo(hero,B1,B2)].concat(opps.map(o=>bestLowTwo(o,B1,B2)));
+    return resolveSplit(highs, lows);
+  }
+  if(kind==='ari'){
+    let ex=hero.slice(); opps.forEach(o=>ex=ex.concat(o));
+    const comm=(cfg.board&&cfg.board.length)?cfg.board[0]:null;
+    if(comm) ex=ex.concat([comm]);
+    const stub=makeStub(ex);
+    const nd=cfg.ndraws||1;
+    const hands=[hero].concat(opps);
+    const firstDiscs=[cfg.heroDisc||[]].concat(opps.map((o,k)=>(cfg.oppDisc&&cfg.oppDisc[k])||[]));
+    const finals=playDraws('ari', hands, firstDiscs, nd, stub);
+    const C = comm || stubDraw(stub,1)[0];
+    return resolveArchie(finals.map(f=>bestHigh(f.concat([C]))), finals.map(f=>low8(f)));
+  }
+  if(kind==='draw27'||kind==='badugi'||kind==='badacey'||kind==='baduecey'||kind==='archie'||kind==='a5td'){
+    let ex=hero.slice(); opps.forEach(o=>ex=ex.concat(o));
+    const stub=makeStub(ex);
+    const nd=cfg.ndraws||1;
+    const hands=[hero].concat(opps);
+    const firstDiscs=[cfg.heroDisc||[]].concat(opps.map((o,k)=>(cfg.oppDisc&&cfg.oppDisc[k])||[]));
+    const finals=playDraws(kind, hands, firstDiscs, nd, stub);
+    if(kind==='draw27') return resolveLow(deuce7(finals[0]), finals.slice(1).map(deuce7));
+    if(kind==='a5td') return resolveLow(a5key5(finals[0]), finals.slice(1).map(a5key5));
+    if(kind==='badugi') return resolveLow(badugiKey(finals[0]), finals.slice(1).map(badugiKey));
+    if(kind==='badacey') return resolveSplit2([badugiKey(finals[0])].concat(finals.slice(1).map(badugiKey)),
+                                              [a5key5(finals[0])].concat(finals.slice(1).map(a5key5)));
+    if(kind==='baduecey') return resolveSplit2([badugiKeyHigh(finals[0])].concat(finals.slice(1).map(badugiKeyHigh)),
+                         [deuce7(finals[0])].concat(finals.slice(1).map(deuce7)));
+    return resolveArchie([rank5(finals[0],true)].concat(finals.slice(1).map(f=>rank5(f,true))),
+                         [low8(finals[0])].concat(finals.slice(1).map(low8)));
+  }
+}
+
+// ===== Drawmaha Pick'em: 7 draw-side variants + "what to pick" advisor =====
+// point value: face(J/Q/K)=0, A=1, else pip (2-10); T=10
+function pips49(five){ let s=0; for(const c of five){ const r=c.r; s += (r>=11&&r<=13)?0:(r===14?1:r); } return s; }
+// high badugi (Hi-dugi): want 4 different suits; pairs/trips/quads are GOOD; nut = A-A-A-A (aces high)
+function hidugiKey(five){
+  function hv(cards){ // poker-value of distinct-suit subset, aces high, pairs good -> higher better
+    const cnt={}; cards.forEach(c=>cnt[c.r]=(cnt[c.r]||0)+1);
+    const g=Object.keys(cnt).map(r=>[cnt[r],parseInt(r)]).sort((a,b)=> b[0]-a[0]||b[1]-a[1]);
+    const key=[]; for(const [c,r] of g){ key.push(c); key.push(r); } return key;
+  }
+  let best=null;
+  for(let size=4; size>=1; size--){
+    for(const sub of combos(five,size)){
+      if(new Set(sub.map(c=>c.s)).size!==size) continue; // need 'size' distinct suits
+      const key=[size].concat(hv(sub));
+      if(best===null || arrCmp(key,best)>0) best=key;
+    }
+    if(best!==null) break;
+  }
+  return best;
+}
+const PICKEM_VARIANTS=['hi','low','27','badugi','hidugi','p49','p0'];
+function pickemKey(five, v){
+  switch(v){
+    case 'hi': return rank5(five,false);
+    case 'low': return a5key5(five);
+    case '27': return deuce7(five);
+    case 'badugi': return badugiKey(five);
+    case 'hidugi': return hidugiKey(five);
+    case 'p49': return [pips49(five)];
+    case 'p0': return [pips49(five)];
+  }
+}
+function pickemHigher(v){ return v==='hi'||v==='hidugi'||v==='p49'; }
+function rlabel_(r){ return r===14?'A':r===13?'K':r===12?'Q':r===11?'J':r===10?'T':(''+r); }
+function pickemDesc(five, v){
+  if(v==='hi'){ const k=rank5(five,false); const nm=['ハイカード','ワンペア','ツーペア','スリーカード','ストレート','フラッシュ','フルハウス','フォーカード','ストレートフラッシュ']; return nm[k[0]]; }
+  if(v==='low'){ const r=five.map(c=>c.r===14?1:c.r).sort((a,b)=>b-a).map(x=>x===1?'A':rlabel_(x)); return r.join('-')+'（A-5）'; }
+  if(v==='27'){ const r=five.map(c=>c.r).sort((a,b)=>b-a).map(rlabel_); return r.join('-')+'（2-7）'; }
+  if(v==='badugi'){ const k=badugiKey(five); const n=4-k[0]; const rk=k.slice(1).map(x=>x===1?'A':rlabel_(x)); return n+'枚バドゥーギ（'+rk.join('-')+'）'; }
+  if(v==='hidugi'){ const k=hidugiKey(five); const sz=k[0], c1=k[1], c2=k[3]||0;
+    const lab=c1===4?'クアッズ':c1===3?'トリップス':(c1===2&&c2===2)?'ツーペア':c1===2?'ペア':'ハイ';
+    return sz+'色 '+lab+'（'+rlabel_(k[2])+'）'; }
+  if(v==='p49'||v==='p0'){ return pips49(five)+'点'; }
+}
+function pickemDrawEq(five, v, nopp, trials){
+  const higher=pickemHigher(v); const hk=pickemKey(five,v);
+  let sh=0;
+  for(let t=0;t<trials;t++){
+    const d=shuffledDeck(five); let i=0, ties=0, heroBest=true;
+    for(let o=0;o<nopp;o++){ const oh=d.slice(i,i+5); i+=5; const c=arrCmp(pickemKey(oh,v),hk);
+      if(higher){ if(c>0){heroBest=false;break;} else if(c===0) ties++; }
+      else { if(c<0){heroBest=false;break;} else if(c===0) ties++; } }
+    if(heroBest) sh += 1/(1+ties);
+  }
+  return sh/trials;
+}
+function pickemAdvise(five, nopp, trials){
+  const labelJP={hi:'Hi（ハイ役）',low:'Low（A-5）','27':'2-7',badugi:'Badugi（低）',hidugi:'Hi-dugi（高）',p49:'49（点数最大）',p0:'0（点数最小）'};
+  const res=PICKEM_VARIANTS.map(v=>({variant:v, label:labelJP[v], eq:pickemDrawEq(five,v,nopp,trials||1500), desc:pickemDesc(five,v)}));
+  res.sort((a,b)=>b.eq-a.eq);
+  return res;
+}
+
+const ENGINE = { FULLDECK, rank5, bestHigh, low8, razzBest, deuce7, badugiKey, omahaHigh, omahaLow8, oneTrial, vsOneTrial, arrCmp, mkid, pickemAdvise, hidugiKey, pips49 };
+global.MIXENGINE = ENGINE;
+})(typeof window!=='undefined'?window:globalThis);
+
+
+
+</script>
+<script>
+
+
+/* ===== ABYSS engine extension: ChinChi Low / Action ChinChi ===== */
+(function(){
+const E=window.MIXENGINE; if(!E) return;
+function chinVal(r){var x=(r===14)?1:r; if(x===13)return null; return x>=7?x-6:x;}
+function chinScore(a,b,c){
+  var v=[chinVal(a),chinVal(b),chinVal(c)];
+  if(v[0]===null||v[1]===null||v[2]===null)return null;
+  v.sort(function(x,y){return x-y;});
+  if(v[0]===v[1]&&v[1]===v[2])return v[0]===1?[7,0]:[6,v[0]];
+  if(v[0]===4&&v[1]===5&&v[2]===6)return [5,0];
+  if(v[0]===1&&v[1]===2&&v[2]===3)return [2,0];
+  if(v[0]===v[1])return [4,v[2]];
+  if(v[1]===v[2])return [4,v[0]];
+  return [3,0];
+}
+function cT(a,b){return a[0]!==b[0]?a[0]-b[0]:a[1]-b[1];}
+function cA(a,b){for(var i=0;i<Math.max(a.length,b.length);i++){var d=(a[i]||0)-(b[i]||0);if(d)return d;}return 0;}
+function deckMinus(used){var d=[];for(var r=2;r<=14;r++)for(var s=0;s<4;s++){var id=(r-2)*4+s;if(!used.has(id))d.push({r:r,s:s,id:id});}return d;}
+function shuffle(d,n){for(var k=0;k<n;k++){var j=k+Math.floor(Math.random()*(d.length-k));var t=d[k];d[k]=d[j];d[j]=t;}}
+function settle(kind, players){
+  var scores=players.map(function(p){return chinScore(p[0].r,p[1].r,p[6].r);});
+  var best=null; scores.forEach(function(s){if(s&&(!best||cT(s,best)>0))best=s;});
+  var cw=players.map(function(p,i){return !!(scores[i]&&best&&cT(scores[i],best)===0);});
+  var nC=cw.filter(Boolean).length;
+  var elig=players.map(function(p){ if(kind!=='achinchi')return true; return p.some(function(c){return c.r>=11&&c.r<=13;}); });
+  var keys=players.map(function(p,i){return elig[i]?E.razzBest(p):null;});
+  var bL=null; keys.forEach(function(k){if(k&&(!bL||cA(k,bL)<0))bL=k;});
+  var lw=players.map(function(p,i){return !!(keys[i]&&bL&&cA(keys[i],bL)===0);});
+  var nL=lw.filter(Boolean).length;
+  var hs=0, hi=0, lo=0;
+  if(best&&bL){ if(cw[0])hs+=0.5/nC; if(lw[0])hs+=0.5/nL; }
+  else if(best){ if(cw[0])hs+=1/nC; }
+  else if(bL){ if(lw[0])hs+=1/nL; }
+  else hs=1/players.length;
+  if(best&&cw[0])hi=(nC>1?0.5:1);
+  if(bL&&lw[0])lo=(nL>1?0.5:1);
+  return {share:hs, scoop:(hs>=0.999)?1:0, hi:hi, lo:lo};
+}
+function trial(kind, hero, nopp){
+  var used=new Set(hero.map(function(c){return c.id;}));
+  var deck=deckMinus(used); shuffle(deck,(7-hero.length)+7*nopp);
+  var di=0, H=hero.slice();
+  while(H.length<7)H.push(deck[di++]);
+  var players=[H];
+  for(var o=0;o<nopp;o++){players.push(deck.slice(di,di+7));di+=7;}
+  return settle(kind,players);
+}
+function vsTrial(cfg){
+  var all=[cfg.hero].concat(cfg.opps);
+  var used=new Set(); all.forEach(function(p){p.forEach(function(c){used.add(c.id);});});
+  var need=0; all.forEach(function(p){need+=7-p.length;});
+  var deck=deckMinus(used); shuffle(deck,need);
+  var di=0;
+  var players=all.map(function(p){var q=p.slice();while(q.length<7)q.push(deck[di++]);return q;});
+  return settle(cfg.kind,players);
+}
+var _o=E.oneTrial, _v=E.vsOneTrial;
+E.oneTrial=function(kind,hero,nopp,draws){ if(kind==='chinchi'||kind==='achinchi')return trial(kind,hero,nopp); return _o(kind,hero,nopp,draws); };
+E.vsOneTrial=function(cfg){ if(cfg&&(cfg.kind==='chinchi'||cfg.kind==='achinchi'))return vsTrial(cfg); return _v(cfg); };
+})();
+
+
+</script>
+<script>
+const GAMES = [{"id": "intro", "md": "intro", "code": "START", "jp": "初めてのMIX GAME", "calc": false, "grp": "core"}, {"id": "glossary", "md": "glossary", "code": "TERMS", "jp": "用語集・ルール基礎", "calc": false, "grp": "core"}, {"id": "overview", "md": "overview", "code": "INDEX", "jp": "概要・目次", "calc": false, "grp": "core"}, {"id": "quiz", "md": "quiz", "code": "QUIZ", "jp": "ルール検定", "calc": false, "grp": "core"}, {"id": "stud8", "md": "stud8", "code": "STUD8", "jp": "スタッド ハイロー", "calc": true, "kind": "stud8", "hole": 3, "opps": [1, 2], "split": true, "cardLabel": "自分の3枚（3rd street・ダウン2＋ドア1）", "grp": "core"}, {"id": "studhi", "md": "studhi", "code": "STUD HI", "jp": "スタッド ハイ", "calc": true, "kind": "studhi", "hole": 3, "opps": [1, 2], "split": false, "cardLabel": "自分の3枚（3rd street）", "grp": "core"}, {"id": "razz", "md": "razz", "code": "RAZZ", "jp": "スタッド ロー(A-5)", "calc": true, "kind": "razz", "hole": 3, "opps": [1, 2], "split": false, "lowwin": true, "cardLabel": "自分の3枚（3rd street）", "grp": "core"}, {"id": "flo8", "md": "flo8", "code": "FLO8", "jp": "オマハ ハイロー", "calc": true, "kind": "flo8", "hole": 4, "opps": [1, 2, 3], "split": true, "cardLabel": "自分の4枚（ホールカード）", "grp": "core"}, {"id": "plo", "md": "plo", "code": "PLO", "jp": "ポットリミット オマハ", "calc": true, "kind": "plo", "hole": 4, "opps": [1, 2, 3], "split": false, "cardLabel": "自分の4枚（ホールカード）", "grp": "core"}, {"id": "flh", "md": "flh", "code": "FLH", "jp": "リミット ホールデム", "calc": true, "kind": "flh", "hole": 2, "opps": [1, 2, 3], "split": false, "cardLabel": "自分の2枚（ホールカード）", "grp": "core"}, {"id": "nlhe", "md": "nlhe", "code": "NLHE", "jp": "ノーリミット ホールデム", "calc": true, "kind": "flh", "hole": 2, "opps": [1, 2, 3], "split": false, "cardLabel": "自分の2枚（ホールカード）", "grp": "core"}, {"id": "td27", "md": "td27", "code": "2-7 TD", "jp": "トリプルドロー", "calc": true, "kind": "draw27", "draws": 3, "hole": 5, "opps": [1, 2], "split": false, "lowwin": true, "cardLabel": "自分の5枚（最初の配り・ドロー前）", "grp": "core"}, {"id": "sd27", "md": "sd27", "code": "2-7 SD", "jp": "シングルドロー", "calc": true, "kind": "draw27", "draws": 1, "hole": 5, "opps": [1, 2], "split": false, "lowwin": true, "cardLabel": "自分の5枚（最初の配り・ドロー前）", "grp": "core"}, {"id": "badugi", "md": "badugi", "code": "BADUGI", "jp": "バドゥーギ", "calc": true, "kind": "badugi", "draws": 3, "hole": 4, "opps": [1, 2], "split": false, "lowwin": true, "cardLabel": "自分の4枚（最初の配り・ドロー前）", "grp": "core"}, {"id": "intro_a", "md": "intro_a", "code": "START", "jp": "初めてのMIX GAME", "calc": false, "grp": "another"}, {"id": "glossary_a", "md": "glossary_a", "code": "TERMS", "jp": "用語集・ルール基礎", "calc": false, "grp": "another"}, {"id": "overview_a", "md": "overview_a", "code": "INDEX", "jp": "はじめに・目次", "calc": false, "grp": "another"}, {"id": "plbigo", "md": "plbigo", "code": "PL BIG-O", "jp": "PL ビッグO（5枚オマハ8）", "calc": true, "kind": "bigo", "hole": 5, "opps": [1, 2, 3], "split": true, "hiLabel": "ハイ", "loLabel": "ロー(8)", "cardLabel": "自分の5枚（ホールカード）", "grp": "another"}, {"id": "flbigo", "md": "flbigo", "code": "FL BIG-O", "jp": "FL ビッグO（5枚オマハ8）", "calc": true, "kind": "bigo", "hole": 5, "opps": [1, 2, 3], "split": true, "hiLabel": "ハイ", "loLabel": "ロー(8)", "cardLabel": "自分の5枚（ホールカード）", "grp": "another"}, {"id": "sstud8", "md": "sstud8", "code": "SUPER STUD8", "jp": "スーパー スタッド ハイロー", "calc": true, "kind": "sstud8", "hole": 5, "opps": [1, 2, 3], "split": true, "hiLabel": "ハイ", "loLabel": "ロー(8)", "cardLabel": "自分の5枚（3rd・ダウン4＋ドア1／2枚捨てる前）", "grp": "another"}, {"id": "badacey", "md": "badacey", "code": "BADACEY", "jp": "バダシー（Badugi+A5）", "calc": true, "kind": "badacey", "draws": 3, "hole": 5, "opps": [1, 2, 3], "split": true, "hiLabel": "バドゥーギ", "loLabel": "A-5ロー", "cardLabel": "自分の5枚（最初の配り・ドロー前）", "grp": "another"}, {"id": "baduecey", "md": "baduecey", "code": "BADUECEY", "jp": "バデューシー（Badugi+2-7）", "calc": true, "kind": "baduecey", "draws": 3, "hole": 5, "opps": [1, 2, 3], "split": true, "hiLabel": "バドゥーギ", "loLabel": "2-7ロー", "cardLabel": "自分の5枚（最初の配り・ドロー前）", "grp": "another"}, {"id": "archie", "md": "archie", "code": "ARCHIE", "jp": "アーチー（TD ハイロー）", "calc": true, "kind": "archie", "draws": 3, "hole": 5, "opps": [1, 2, 3], "split": true, "hiLabel": "ハイ(9+)", "loLabel": "ロー(8)", "cardLabel": "自分の5枚（最初の配り・ドロー前）", "grp": "another"}, {"id": "ari", "md": "ari", "code": "ARI", "jp": "アリ（Archie＋共有1枚）", "calc": true, "kind": "ari", "draws": 3, "hole": 5, "opps": [1, 2, 3], "split": true, "hiLabel": "ハイ(9+/共有)", "loLabel": "ロー(8)", "cardLabel": "自分の5枚（最初の配り・ドロー前）", "grp": "another"}, {"id": "sstud8nq", "md": "sstud8nq", "code": "S.STUD NQ", "jp": "スーパースタッド ハイロー(NQ)", "calc": true, "kind": "sstud8nq", "hole": 5, "opps": [1, 2, 3], "split": true, "hiLabel": "ハイ", "loLabel": "ロー(無制限)", "cardLabel": "自分の5枚（3rd・ダウン4＋ドア1／2枚捨てる前）", "grp": "another"}, {"id": "plsstud8nq", "md": "plsstud8nq", "code": "PL S.STUD NQ", "jp": "PL スーパースタッド ハイロー(NQ)", "calc": true, "kind": "sstud8nq", "hole": 5, "opps": [1, 2, 3], "split": true, "hiLabel": "ハイ", "loLabel": "ロー(無制限)", "cardLabel": "自分の5枚（3rd・ダウン4＋ドア1／2枚捨てる前）", "grp": "another"}, {"id": "dramahaHi", "md": "dramahaHi", "code": "DRAMAHA HI", "jp": "ドラマハ ハイ（5枚ドロー+オマハ）", "calc": true, "kind": "dramahaHi", "hole": 5, "opps": [1, 2, 3], "split": true, "hiLabel": "ドロー(高)", "loLabel": "オマハ(高)", "cardLabel": "自分の5枚（ホールカード／ドロー前）", "grp": "another"}, {"id": "dramaha27", "md": "dramaha27", "code": "DRAMAHA 2-7", "jp": "ドラマハ 2-7（2-7ドロー+オマハ）", "calc": true, "kind": "dramaha27", "hole": 5, "opps": [1, 2, 3], "split": true, "hiLabel": "2-7ドロー", "loLabel": "オマハ(高)", "cardLabel": "自分の5枚（ホールカード／ドロー前）", "grp": "another"}, {"id": "dramahaBadugi", "md": "dramahaBadugi", "code": "DRAMAHA DUGI", "jp": "ドラマハ バドゥーギ（Dramadugi）", "calc": true, "kind": "dramahaBadugi", "hole": 5, "opps": [1, 2, 3], "split": true, "hiLabel": "バドゥーギ", "loLabel": "オマハ(高)", "cardLabel": "自分の5枚（ホールカード／ドロー前）", "grp": "another"}, {"id": "a5td", "md": "a5td", "code": "A-5 TD", "jp": "A-5 トリプルドロー", "calc": true, "kind": "a5td", "draws": 3, "hole": 5, "opps": [1, 2], "split": false, "lowwin": true, "cardLabel": "自分の5枚（最初の配り・ドロー前）", "grp": "another"}, {"id": "razzdeucey", "md": "razzdeucey", "code": "RAZZ-DEUCEY", "jp": "ラズ・デューシー（Stud Badugi+2-7）", "calc": true, "kind": "razzdeucey", "hole": 5, "opps": [1, 2], "split": true, "hiLabel": "バドゥーギ", "loLabel": "2-7ロー", "cardLabel": "自分の5枚（3rd・ダウン4＋ドア1／2枚捨てる前）", "grp": "another"}, {"id": "razzdacey", "md": "razzdacey", "code": "RAZZ-DACEY", "jp": "ラズ・デイシー（Stud Badugi+A-5）", "calc": true, "kind": "razzdacey", "hole": 5, "opps": [1, 2], "split": true, "hiLabel": "バドゥーギ", "loLabel": "A-5ロー", "cardLabel": "自分の5枚（3rd・ダウン4＋ドア1／2枚捨てる前）", "grp": "another"}, {"id": "dboard8", "md": "dboard8", "code": "2BOARD 5O-8", "jp": "ダブルボード5card オマハ ハイロー ベストベスト", "calc": true, "kind": "dboard8", "hole": 5, "opps": [1, 2, 3], "split": true, "hiLabel": "ハイ(2盤best)", "loLabel": "ロー(2盤best)", "cardLabel": "自分の5枚（ホールカード）", "grp": "another"}, {"id": "dboardBigO", "md": "dboardBigO", "code": "2BOARD 5O-HI", "jp": "ダブルボード5枚オマハ（ハイ×ハイ）", "calc": true, "kind": "dboardBigO", "hole": 5, "opps": [1, 2, 3], "split": true, "hiLabel": "盤1ハイ", "loLabel": "盤2ハイ", "cardLabel": "自分の5枚（ホールカード）", "grp": "another"}, {"id": "actionrazz", "md": "actionrazz", "code": "S.ACTION RAZZ", "jp": "スーパー・アクション・ラズ", "calc": true, "kind": "actionrazz", "hole": 5, "opps": [1, 2], "split": false, "lowwin": true, "cardLabel": "自分の5枚（3rd・ダウン4＋ドア1／2枚捨てる前）", "grp": "another"}, {"id": "pickem", "md": "pickem", "code": "DRAMAHA PICK", "jp": "ドラマハ ピッケム（7変種を選択）", "calc": true, "kind": "pickem", "hole": 5, "opps": [1, 2, 3, 4, 5], "split": false, "cardLabel": "配られた5枚（どれを選ぶ?）", "grp": "another"}, {"id": "overview_ab", "md": "overview_ab", "code": "INDEX", "jp": "深淵・目次", "calc": false, "grp": "abyss"}, {"id": "chinchi", "md": "chinchi", "code": "CHINCHI LOW", "jp": "スタッド チンチロー", "calc": true, "kind": "chinchi", "hole": 7, "opps": [1, 2, 3], "split": true, "hiLabel": "チンチロ", "loLabel": "ロー(A-5)", "cardLabel": "入力順＝伏せ札2枚→ドア→4th…7th（チンチロ役は伏せ2枚＋7th）", "grp": "abyss"}, {"id": "achinchi", "md": "achinchi", "code": "ACT.CHINCHI", "jp": "アクション チンチロー", "calc": true, "kind": "achinchi", "hole": 7, "opps": [1, 2, 3], "split": true, "hiLabel": "チンチロ", "loLabel": "ロー(要絵札)", "cardLabel": "入力順＝伏せ札2枚→ドア→4th…7th（チンチロ役は伏せ2枚＋7th）", "grp": "abyss"}, {"id": "aokichie", "md": "aokichie", "code": "AOKICHIE", "jp": "アオキチー", "calc": false, "grp": "abyss"}, {"id": "paradise", "md": "paradise", "code": "PARADISE", "jp": "パラダイス ピッケム", "calc": false, "grp": "abyss"}];
+const PRESETS = {"stud8": [{"n": "A23 同スート", "t": "スーテッド最強級 50%超", "c": ["As", "2s", "3s"]}, {"n": "裸KK2", "t": "2ロー相手だと約36%", "c": ["Kh", "Kd", "2s"]}, {"n": "A29 ブリック", "t": "損益分岐割れ 30%", "c": ["Ac", "2d", "9s"]}], "studhi": [{"n": "(AA)K", "t": "スプリットエース 61%", "c": ["As", "Ah", "Kd"]}, {"n": "JT9 3フラッシュ", "t": "同スートで49%", "c": ["Js", "Ts", "9s"]}, {"n": "JT9 レインボー", "t": "スート無しで40%へ急落", "c": ["Jh", "Td", "9s"]}], "razz": [{"n": "A23", "t": "最強級 62%", "c": ["As", "2h", "3d"]}, {"n": "A29", "t": "ブリック1枚で50%", "c": ["As", "2h", "9d"]}, {"n": "A2K ブリック", "t": "損益分岐割れ 32%", "c": ["As", "2h", "Kd"]}], "flo8": [{"n": "A234 ダブルスート", "t": "スクープ狙いの王 46%", "c": ["As", "2s", "3h", "4h"]}, {"n": "A2KK ds", "t": "ロー＋ハイ両面 49%", "c": ["As", "2s", "Kh", "Kd"]}, {"n": "KQJT ds (ハイonly)", "t": "損益分岐ギリギリ 34%", "c": ["Ks", "Qs", "Jh", "Th"]}], "plo": [{"n": "AAKK ダブルスート", "t": "PLO最強 HU70%", "c": ["As", "Ah", "Ks", "Kh"]}, {"n": "9876 ds", "t": "協調ラン 4人で28%", "c": ["9s", "8s", "7h", "6h"]}, {"n": "AA72 レインボー", "t": "ダングラーで多人数急落", "c": ["As", "Ah", "7d", "2c"]}], "flh": [{"n": "AA", "t": "HU 85%", "c": ["As", "Ah"]}, {"n": "AKs", "t": "スーテッド 67%", "c": ["As", "Ks"]}, {"n": "AKo", "t": "オフで約-2%", "c": ["As", "Kh"]}, {"n": "72o", "t": "最弱 35%", "c": ["7s", "2h"]}], "nlhe": [{"n": "AA", "t": "最強 HU85%", "c": ["As", "Ah"]}, {"n": "AKs", "t": "スーテッド 67%", "c": ["As", "Ks"]}, {"n": "76s", "t": "スーテッドコネクター 45%", "c": ["7s", "6s"]}, {"n": "22", "t": "セット狙い 50%", "c": ["2s", "2h"]}], "td27": [{"n": "パット7 (75432)", "t": "ほぼ無敵 97%", "c": ["7s", "5h", "4d", "3c", "2s"]}, {"n": "1ドロー7 (2347+K)", "t": "7のワンドロー 76%", "c": ["2s", "3h", "4d", "7c", "Ks"]}, {"n": "2ドロー (234+KQ)", "t": "2枚替え 65%", "c": ["2s", "3h", "4d", "Kc", "Qs"]}], "sd27": [{"n": "パット7 (75432)", "t": "ほぼ無敵 97%", "c": ["7s", "5h", "4d", "3c", "2s"]}, {"n": "1ドロー7 (2347+K)", "t": "7のワンドロー 76%", "c": ["2s", "3h", "4d", "7c", "Ks"]}, {"n": "2ドロー (234+KQ)", "t": "2枚替え 68%", "c": ["2s", "3h", "4d", "Kc", "Qs"]}], "badugi": [{"n": "A234 完成バドゥーギ", "t": "ほぼ無敵", "c": ["As", "2h", "3d", "4c"]}, {"n": "Kバドゥーギ (K742)", "t": "弱完成・多人数で負け越し", "c": ["Ks", "7h", "4d", "2c"]}, {"n": "A23 1ドロー", "t": "強い3枚ドロー 68%（K♠を捨てる）", "c": ["As", "2h", "3d", "Ks"]}], "plbigo": [{"n": "A2345 ダブルスート", "t": "ナッツロー＋ホイール 55%", "c": ["As", "2s", "3h", "4h", "5d"]}, {"n": "A23＋二刀流エース", "t": "ロー＋ナッツフラ 60%", "c": ["As", "2h", "3d", "Ks", "Qs"]}, {"n": "KKQJT ハイonly", "t": "ロー無しは事故る 45%", "c": ["Ks", "Kh", "Qd", "Jc", "Ts"]}], "flbigo": [{"n": "A2345 ダブルスート", "t": "ナッツロー＋ホイール 55%", "c": ["As", "2s", "3h", "4h", "5d"]}, {"n": "A23＋二刀流エース", "t": "ロー＋ナッツフラ 60%", "c": ["As", "2h", "3d", "Ks", "Qs"]}, {"n": "KKQJT ハイonly", "t": "ロー無しは事故る 45%", "c": ["Ks", "Kh", "Qd", "Jc", "Ts"]}], "sstud8": [{"n": "A-2-3＋札（両面・scoop志向）", "t": "低＋高の芽", "c": ["As", "2h", "3d", "7c", "9s"]}, {"n": "A-A-A ロールド（高一本）", "t": "ハイ強・ロー無", "c": ["As", "Ah", "Ad", "9c", "Ks"]}, {"n": "8-4-3＋低（ロー寄り）", "t": "8ロー目標", "c": ["8s", "4h", "3d", "2c", "Ks"]}], "badacey": [{"n": "パット A2345 レインボー", "t": "nut-nut スクープ 100%", "c": ["As", "2h", "3d", "4c", "5s"]}, {"n": "A235＋引き", "t": "スクープ狙い 約86%", "c": ["As", "3h", "5d", "2c", "9s"]}, {"n": "8バドゥーギ＋K（やや重い）", "t": "A2345より一段劣る", "c": ["8s", "6h", "4d", "3c", "Ks"]}], "baduecey": [{"n": "パット 23457 レインボー", "t": "nut-nut スクープ 100%", "c": ["2s", "3h", "4d", "5c", "7s"]}, {"n": "234＋引き", "t": "スクープ狙い", "c": ["2s", "3h", "4d", "9c", "Ks"]}, {"n": "A2345（罠！Aは最悪）", "t": "Badaceyのナッツが此処では弱い", "c": ["As", "2h", "3d", "4c", "5s"]}], "archie": [{"n": "A2345 ホイール", "t": "ストレート高＋ナッツロー ~97%", "c": ["As", "2h", "3d", "4c", "5s"]}, {"n": "AA＋高札（ハイのみ）", "t": "9ペア+で成立 67%", "c": ["As", "Ah", "Kd", "Qc", "7s"]}, {"n": "2346＋ブリック（4ロー）", "t": "ロー寄り 60%", "c": ["2h", "3h", "4c", "6s", "Kd"]}], "ari": [{"n": "A2345 ホイール", "t": "共有でも高低とも強い ~94%", "c": ["As", "2h", "3d", "4c", "5s"]}, {"n": "AA＋高札（ハイ寄り）", "t": "共有で全員が伸びる 62%", "c": ["As", "Ah", "Kd", "Qc", "7s"]}, {"n": "2346＋ブリック（4ロー）", "t": "ロー主体 60%", "c": ["2h", "3h", "4c", "6s", "Kd"]}], "sstud8nq": [{"n": "A-2-3＋札（両面）", "t": "NQは2-way価値↑", "c": ["As", "2h", "3d", "7c", "9s"]}, {"n": "A-A-A ロールド（高一本）", "t": "NQでは弱め", "c": ["As", "Ah", "Ad", "9c", "Ks"]}, {"n": "8-4-3＋低（ロー寄り）", "t": "最低でも半分", "c": ["8s", "4h", "3d", "2c", "Ks"]}], "plsstud8nq": [{"n": "A-2-3＋札（両面）", "t": "NQは2-way価値↑", "c": ["As", "2h", "3d", "7c", "9s"]}, {"n": "A-A-A ロールド（高一本）", "t": "NQでは弱め", "c": ["As", "Ah", "Ad", "9c", "Ks"]}, {"n": "8-4-3＋低（ロー寄り）", "t": "最低でも半分", "c": ["8s", "4h", "3d", "2c", "Ks"]}], "dramahaHi": [{"n": "A2345 ストレート", "t": "ドロー半分ほぼ確保 73%", "c": ["As", "2s", "3h", "4h", "5d"]}, {"n": "KKQJT", "t": "KKでドロー側が強い 73%", "c": ["Ks", "Kh", "Qd", "Jc", "Ts"]}, {"n": "AAKK5（素2ペア）", "t": "ドロー2ペア＋オマハ", "c": ["As", "Ah", "Ks", "Kd", "5c"]}], "dramaha27": [{"n": "75432 ナッツ2-7", "t": "ドロー半分ほぼ確保 69%", "c": ["7s", "5h", "4d", "3c", "2s"]}, {"n": "AAKQJ（オマハ寄り）", "t": "2-7側は最弱 36%", "c": ["As", "Ah", "Ks", "Qh", "Jd"]}, {"n": "234＋高2（2-7引き）", "t": "低札スタート", "c": ["2s", "3h", "4d", "Kc", "Qs"]}], "dramahaBadugi": [{"n": "A234 ナッツバドゥーギ＋9", "t": "ドロー半分ほぼ確保 71%", "c": ["As", "2h", "3d", "4c", "9s"]}, {"n": "5678 8バドゥーギ", "t": "ドロー強・両面 73%", "c": ["5s", "6h", "7d", "8c", "Ks"]}, {"n": "AAKK5（オマハ寄り）", "t": "バドゥーギ弱 41%", "c": ["As", "Ah", "Ks", "Kd", "5c"]}], "a5td": [{"n": "A2345 パット・ホイール", "t": "ナッツ ~100%", "c": ["As", "2h", "3d", "4c", "5s"]}, {"n": "A234＋ブリック（1枚引き）", "t": "ホイール狙い 82%", "c": ["As", "2h", "3d", "4c", "Kd"]}, {"n": "87654 ラフ8", "t": "メイドだが重い 71%", "c": ["8s", "7h", "6d", "5c", "4s"]}], "razzdeucey": [{"n": "2-3-4-5 レインボー", "t": "5badugi＋好2-7", "c": ["2s", "3h", "4d", "5c", "9s"]}, {"n": "A-2-3-4（A高で不利）", "t": "A高は重い", "c": ["As", "2h", "3d", "4c", "Ks"]}, {"n": "2-3-4＋札（三低札）", "t": "バドゥーギ寄り", "c": ["2s", "3h", "4d", "7c", "Ks"]}], "razzdacey": [{"n": "A-2-3-4 レインボー", "t": "ナッツbadugi＋強A-5", "c": ["As", "2h", "3d", "4c", "9s"]}, {"n": "2-3-4-5（エースなし）", "t": "5badugi＋好A-5", "c": ["2s", "3h", "4d", "5c", "Ks"]}, {"n": "A-2-3＋札（三低札）", "t": "両面プレミアム", "c": ["As", "2h", "3d", "9c", "Ks"]}], "dboard8": [{"n": "A-A-2-3-K ダブルスート（両面最強）", "t": "スクープ志向 70%", "c": ["As", "Ah", "2s", "3h", "Kd"]}, {"n": "A-2-3-4-5 ダブルスート（ナッツロー+ホイール）", "t": "ロー強 65%", "c": ["As", "2s", "3h", "4h", "5d"]}, {"n": "K-K-Q-Q-J（ハイonly）", "t": "ロー無し＝約半分上限 39%", "c": ["Ks", "Kh", "Qs", "Qh", "Jd"]}], "dboardBigO": [{"n": "AAKK＋札（大ダブルペア）", "t": "両盤で高い 64%", "c": ["As", "Ah", "Ks", "Kh", "2c"]}, {"n": "KQJT9 ダブルスート", "t": "ランダウン 57%", "c": ["Ks", "Qs", "Jh", "Th", "9h"]}, {"n": "A2345（ロー志向→高では平凡）", "t": "ハイのみ 45%", "c": ["As", "2s", "3h", "4h", "5d"]}], "actionrazz": [{"n": "A-2-3（プレミアム低）", "t": "約70%でペイント成立 56%", "c": ["As", "2h", "3d", "8c", "9s"]}, {"n": "4-6-7（資格無しの罠）", "t": "凡庸な低＝最大リーク 53%", "c": ["4s", "6h", "7d", "9c", "Ts"]}, {"n": "8-9-T（高すぎ）", "t": "低が弱い 42%", "c": ["8s", "9h", "Td", "Qc", "Ks"]}], "pickem": [{"n": "AAAA（→Hi/Hi-dugi）", "t": "クアッズ最強", "c": ["As", "Ah", "Ad", "Ac", "9s"]}, {"n": "ホイール A2345（→Badugi/Low）", "t": "低の二刀流", "c": ["As", "2h", "3d", "4c", "5s"]}, {"n": "TTTT9（→49＝49点）", "t": "点数の頂点", "c": ["Ts", "Th", "Td", "Tc", "9s"]}, {"n": "5フェイス KQJKQ（→0＝0点）", "t": "ゼロの頂点", "c": ["Ks", "Qh", "Jd", "Kc", "Qs"]}, {"n": "中間 78T95（→49狙い）", "t": "中札が活きる", "c": ["7s", "8h", "9d", "Tc", "5s"]}], "chinchi": [{"n": "(A7)2 ピン目仕込み＋Aロー", "c": ["As", "7h", "2d"]}, {"n": "(56)A シゴロ両受け", "c": ["5s", "6h", "Ad"]}, {"n": "(28)3 ニ目仕込み", "c": ["2h", "8s", "3d"]}, {"n": "(A2)3 ロー特化", "c": ["As", "2h", "3d"]}], "achinchi": [{"n": "(J5)2 ゴ目仕込み＋資格", "c": ["Js", "5h", "2d"]}, {"n": "(Q6)A ロク目仕込み＋資格", "c": ["Qs", "6h", "Ad"]}, {"n": "(KA)2 Kの二重性", "c": ["Ks", "Ah", "2d"]}, {"n": "(A2)3 資格なしスタート", "c": ["As", "2h", "3d"]}]};
+const VS_PRESETS = {"flh": [{"n": "AA vs KK", "hero": ["As", "Ad"], "opps": [["Ks", "Kc"]]}, {"n": "AKs vs QQ（クラシック対決）", "hero": ["As", "Ks"], "opps": [["Qd", "Qh"]]}, {"n": "AK vs QQ／フロップ Kc7h2d", "hero": ["Ah", "Kh"], "opps": [["Qs", "Qd"]], "board": ["Kc", "7h", "2d"]}, {"n": "【ターン】トップペアK vs QQ／Ks9h4c2d", "hero": ["Ah", "Kh"], "opps": [["Qd", "Qc"]], "board": ["Ks", "9h", "4c", "2d"]}], "nlhe": [{"n": "AKs vs QQ（コインフリップ）", "hero": ["As", "Ks"], "opps": [["Qd", "Qh"]]}, {"n": "AA vs KK（クーラー）", "hero": ["As", "Ad"], "opps": [["Ks", "Kc"]]}, {"n": "JJ vs AK（レース）", "hero": ["Js", "Jd"], "opps": [["As", "Kh"]]}, {"n": "トップペア vs フラッシュドロー／フロップ Ah7s2s", "hero": ["Ah", "Kd"], "opps": [["9s", "8s"]], "board": ["Ah", "7s", "2s"]}], "plo": [{"n": "AAKKds vs 9876ds", "hero": ["As", "Ah", "Ks", "Kh"], "opps": [["9d", "8d", "7c", "6c"]]}, {"n": "AAxx vs ラン下／フロップ 9c8d4h", "hero": ["As", "Ah", "Kd", "2c"], "opps": [["Ts", "9s", "7h", "6h"]], "board": ["9c", "8d", "4h"]}, {"n": "【ターン】トップセットKK vs ドロー／Kd7s2h3c", "hero": ["As", "Ah", "Ks", "Kh"], "opps": [["Qs", "Js", "Th", "9d"]], "board": ["Kd", "7s", "2h", "3c"]}], "flo8": [{"n": "A234ds vs KKQJ（ロー両面 vs ハイ）", "hero": ["As", "2s", "3h", "4h"], "opps": [["Ks", "Kd", "Qh", "Jh"]]}, {"n": "A2KKds vs 9876（両取り vs ハイ）", "hero": ["As", "2s", "Kh", "Kd"], "opps": [["9c", "8c", "7d", "6d"]]}, {"n": "【ターン】ホイール＋ナッツロー vs KKセット／Kd7s5h4c", "hero": ["As", "2h", "3d", "4s"], "opps": [["Ks", "Kh", "9c", "8c"]], "board": ["Kd", "7s", "5h", "4c"]}], "stud8": [{"n": "A23 vs 裸KK2", "hero": ["As", "2h", "3d"], "opps": [["Ks", "Kh", "2s"]]}, {"n": "A45 vs 678（ロー対決）", "hero": ["As", "4h", "5d"], "opps": [["6s", "7h", "8d"]]}, {"n": "【5th】A2347(7ロー完成) vs KKQQ2", "hero": ["As", "2h", "3d", "4s", "7c"], "opps": [["Ks", "Kh", "Qd", "Qs", "2c"]]}], "studhi": [{"n": "(AA)K vs (KK)A", "hero": ["As", "Ah", "Kd"], "opps": [["Ks", "Kh", "Ad"]]}, {"n": "JT9 3フラッシュ vs (QQ)2", "hero": ["Js", "Ts", "9s"], "opps": [["Qd", "Qh", "2c"]]}, {"n": "【5th】トリップスA vs KK＋ブロードウェイ", "hero": ["As", "Ah", "Ad", "Kc", "Qd"], "opps": [["Ks", "Kh", "Qs", "Js", "Tc"]]}], "razz": [{"n": "A23 vs 456", "hero": ["As", "2h", "3d"], "opps": [["4s", "5h", "6d"]]}, {"n": "A24 vs (2)78（ブリック相手）", "hero": ["As", "2h", "4d"], "opps": [["2s", "7h", "8d"]]}, {"n": "【5th】7ロー(A2347) vs 8ロー(24568)", "hero": ["As", "2h", "3d", "4s", "7c"], "opps": [["2s", "4h", "5d", "6s", "8c"]]}], "td27": [{"n": "パット7(75432) vs 1ドロー7", "hero": ["7s", "5h", "4d", "3c", "2s"], "hd": [], "opps": [["2h", "3s", "4c", "7d", "Ks"]], "od": [[4]]}, {"n": "2ドロー(234) vs 2ドロー(235)", "hero": ["2c", "3d", "4s", "Ks", "Qd"], "hd": [3, 4], "opps": [["2h", "3h", "5c", "Kc", "Qs"]], "od": [[3, 4]]}], "sd27": [{"n": "パット8(86432) vs 1ドロー7", "hero": ["8s", "6h", "4d", "3c", "2s"], "hd": [], "opps": [["2h", "3s", "4c", "7d", "Ks"]], "od": [[4]]}, {"n": "スムース9 vs 1ドロー8", "hero": ["9s", "5h", "4d", "3c", "2s"], "hd": [], "opps": [["2h", "3s", "4c", "8d", "Ks"]], "od": [[4]]}], "badugi": [{"n": "パット A234 vs Kバドゥーギ・ドロー", "hero": ["As", "2h", "3d", "4c"], "hd": [], "opps": [["Ks", "7h", "4d", "2c"]], "od": [[0]]}, {"n": "A23 1ドロー vs 完成8バドゥーギ", "hero": ["As", "2h", "3d", "Ks"], "hd": [3], "opps": [["8s", "6h", "3c", "2d"]], "od": [[]]}], "plbigo": [{"n": "A2345ds vs KKQJT／フロップ 6h7d8s", "hero": ["As", "2s", "3h", "4h", "5d"], "opps": [["Ks", "Kh", "Qd", "Jc", "Ts"]], "board": ["6h", "7d", "8s"]}, {"n": "A23二刀流 vs ランダウン", "hero": ["As", "2h", "3d", "Ks", "Qs"], "opps": [["9c", "8c", "7d", "6d", "5h"]]}], "flbigo": [{"n": "A2345ds vs KKQJT／フロップ 6h7d8s", "hero": ["As", "2s", "3h", "4h", "5d"], "opps": [["Ks", "Kh", "Qd", "Jc", "Ts"]], "board": ["6h", "7d", "8s"]}, {"n": "A23二刀流 vs ランダウン", "hero": ["As", "2h", "3d", "Ks", "Qs"], "opps": [["9c", "8c", "7d", "6d", "5h"]]}], "sstud8": [{"n": "3rd: A23(両面) vs KK7(高)", "hero": ["As", "2h", "3d"], "opps": [["Ks", "Kc", "7h"]]}, {"n": "5th: A2345(ホイール) vs KK779", "hero": ["As", "2h", "3d", "4c", "5s"], "opps": [["Ks", "Kc", "7h", "7d", "9s"]]}], "badacey": [{"n": "パットA2345r vs 8バドゥーギ", "hero": ["As", "2h", "3d", "4c", "5s"], "opps": [["8s", "6h", "4d", "3c", "2s"]], "hd": [], "od": [[]]}, {"n": "A35引き(2枚) vs パット7ロー", "hero": ["As", "3h", "5d", "Kc", "Qs"], "opps": [["7s", "5c", "4h", "3d", "2c"]], "hd": [3, 4], "od": [[]]}], "baduecey": [{"n": "パット23457r vs 75432", "hero": ["2s", "3h", "4d", "5c", "7s"], "opps": [["7h", "5s", "4h", "3d", "2d"]], "hd": [], "od": [[]]}, {"n": "234引き(2枚) vs パット8ロー", "hero": ["2s", "3h", "4d", "Kc", "Qs"], "opps": [["8s", "6c", "4h", "3d", "2c"]], "hd": [3, 4], "od": [[]]}], "archie": [{"n": "2346引き(1枚) vs パット99", "hero": ["2h", "3h", "4c", "6s", "Kd"], "opps": [["9s", "9d", "7c", "3s", "2c"]], "hd": [4], "od": [[]]}, {"n": "ホイールA2345 vs AAブロードウェイ", "hero": ["As", "2h", "3d", "4c", "5s"], "opps": [["Ac", "Ad", "Ks", "Qd", "Jc"]], "hd": [], "od": [[]]}], "ari": [{"n": "AA vs KK／共有 A♥（トリップス）", "hero": ["As", "Ad", "7h", "5c", "2s"], "opps": [["Ks", "Kd", "8h", "6c", "3s"]], "board": ["Ah"], "hd": [], "od": [[]]}, {"n": "2346引き(1枚) vs パット99／共有 K♠", "hero": ["2h", "3h", "4c", "6s", "Td"], "opps": [["9s", "9d", "7c", "3s", "2c"]], "board": ["Ks"], "hd": [4], "od": [[]]}], "sstud8nq": [{"n": "3rd: A23 vs 889(高ペア)", "hero": ["As", "2h", "3d"], "opps": [["8s", "8h", "9d"]]}, {"n": "5th: A2347 vs AAK89", "hero": ["As", "2h", "3d", "4c", "7s"], "opps": [["Ac", "Ad", "Ks", "8c", "9h"]]}], "plsstud8nq": [{"n": "3rd: A23 vs 889(高ペア)", "hero": ["As", "2h", "3d"], "opps": [["8s", "8h", "9d"]]}, {"n": "5th: A2347 vs AAK89", "hero": ["As", "2h", "3d", "4c", "7s"], "opps": [["Ac", "Ad", "Ks", "8c", "9h"]]}, {"n": "5th: ロー見た目 vs ハイ実権(深掘り例)", "hero": ["2h", "3d", "7h", "9s", "4s"], "opps": [["Ac", "5c", "6c", "Kc", "7d"]]}], "dramahaHi": [{"n": "A2345 vs KK995 /フロップ AhKd5c", "hero": ["As", "2s", "3h", "4h", "5d"], "opps": [["Ks", "Kc", "9d", "9h", "5s"]], "board": ["Ah", "Kd", "5c"]}, {"n": "KKQJT vs 7654 /プリフロップ", "hero": ["Ks", "Kh", "Qd", "Jc", "Ts"], "opps": [["7s", "6h", "5d", "4c", "9s"]]}], "dramaha27": [{"n": "75432 vs AAKQJ /フロップ 8h7d2c", "hero": ["7s", "5h", "4d", "3c", "2s"], "opps": [["Ah", "As", "Kd", "Qc", "Jh"]], "board": ["8h", "7d", "2c"]}, {"n": "234高2 vs パット9ロー", "hero": ["2s", "3h", "4d", "Kc", "Qs"], "opps": [["9s", "7h", "5d", "4c", "3s"]]}], "dramahaBadugi": [{"n": "A234 vs KK99 /フロップ AhKd5c", "hero": ["As", "2h", "3d", "4c", "9s"], "opps": [["Ks", "Kc", "9d", "9h", "5s"]], "board": ["Ah", "Kd", "5c"]}, {"n": "A234 vs 7654バドゥーギ /プリフロップ", "hero": ["As", "2h", "3d", "4c", "Qs"], "opps": [["7h", "6s", "5d", "4h", "Kc"]]}], "a5td": [{"n": "A2345 vs 86432引き", "hero": ["As", "2h", "3d", "4c", "5s"], "opps": [["8h", "6s", "4d", "3h", "2c"]], "hd": [], "od": [[]]}, {"n": "A234引き(1枚) vs パット8", "hero": ["As", "2h", "3d", "4c", "Kd"], "opps": [["8s", "6h", "5d", "3c", "2s"]], "hd": [4], "od": [[]]}], "razzdeucey": [{"n": "3rd: 234 vs A23(A高で不利)", "hero": ["2s", "3h", "4d"], "opps": [["As", "2c", "3d"]]}, {"n": "5th: 2345 vs A234", "hero": ["2s", "3h", "4d", "5c", "9s"], "opps": [["As", "2c", "3s", "4h", "Kd"]]}], "razzdacey": [{"n": "3rd: A23 vs 234", "hero": ["As", "2h", "3d"], "opps": [["2c", "3s", "4h"]]}, {"n": "5th: A234 vs 2345", "hero": ["As", "2h", "3d", "4c", "9s"], "opps": [["2d", "3s", "4h", "5d", "Kc"]]}], "dboard8": [{"n": "A23K9 vs KKQQ5／盤1 567・盤2 89T", "hero": ["As", "2s", "3h", "Kh", "9d"], "opps": [["Kc", "Kd", "Qc", "Qd", "5h"]], "board": ["5s", "6h", "7d"], "board2": ["8c", "9s", "Td"]}, {"n": "AA234 vs KQJT9／盤1 A24・盤2 KQ5", "hero": ["As", "Ah", "2s", "3h", "4d"], "opps": [["Ks", "Qs", "Jh", "Th", "9c"]], "board": ["Ad", "2c", "4h"], "board2": ["Kc", "Qh", "5c"]}], "dboardBigO": [{"n": "AAKK2 vs JT987／盤1 Kh7s2h・盤2 QcJd5s", "hero": ["As", "Ah", "Ks", "Kd", "2c"], "opps": [["Js", "Ts", "9h", "8h", "7d"]], "board": ["Kh", "7s", "2h"], "board2": ["Qc", "Jd", "5s"]}, {"n": "KQJT9 vs AAK8／盤1 8h9s2c・盤2 AhTd4s", "hero": ["Ks", "Qs", "Jh", "Th", "9c"], "opps": [["Ad", "Ac", "Kc", "8d", "3h"]], "board": ["8h", "9s", "2c"], "board2": ["Ah", "Td", "4s"]}], "actionrazz": [{"n": "3rd: A23 vs 467(中位低)", "hero": ["As", "2h", "3d"], "opps": [["4s", "6h", "7d"]]}, {"n": "5th: 資格23J vs A2345(要ペイント)", "hero": ["2s", "3h", "Jd", "Qc", "Kd"], "opps": [["As", "2d", "3s", "4h", "5d"]]}], "chinchi": [{"n": "ピン仕込み vs シゴロ狙い", "hero": ["As", "7h", "2d"], "opps": [["5s", "6h", "Ad"]]}], "achinchi": [{"n": "J5 vs Q6（絵札の序列）", "hero": ["Js", "5h", "2d"], "opps": [["Qs", "6h", "Ad"]]}]};
+const TRIALS = {"stud8": 6000, "studhi": 7000, "razz": 7000, "flo8": 3500, "plo": 3500, "flh": 9000, "draw27": 4200, "badugi": 4500, "bigo": 2200, "sstud8": 3500, "badacey": 3500, "baduecey": 3500, "archie": 3000, "ari": 3000, "sstud8nq": 3500, "plsstud8nq": 3500, "dramahaHi": 2500, "dramaha27": 2500, "dramahaBadugi": 2500, "a5td": 4200, "razzdeucey": 3500, "razzdacey": 3500, "dboard8": 3000, "dboardBigO": 3000, "actionrazz": 4500, "pickem": 2500, "chinchi": 4000, "achinchi": 3800};
+
+
+
+/* ================= MIX EQUITY LAB ================= */
+const E = window.MIXENGINE;
+const SRC = Object.fromEntries(GAMES.map(g=>[g.id,g]));
+
+/* 統合方針：
+   ・NL/PL/FL は勝率判定に影響しないため統合（Hold'em, Big-O, Stud Hi-Lo NQ）
+   ・スーパー有無で最終判定が同一のものは統合（Stud Hi-Lo）
+   ・スタッド系は「7枚のうち既知の枚数を任意指定」モデルに統一 */
+const LAB_GAMES = [
+ {id:'holdem',   kind:'flh',           jp:'ホールデム',                    grp:'core',    fam:'board', slots:2, pk:['nlhe','flh']},
+ {id:'omaha',    kind:'plo',           jp:'オマハ',                        grp:'core',    fam:'board', slots:4, pk:['plo']},
+ {id:'omaha8',   kind:'flo8',          jp:'オマハ ハイロー（8ob）',         grp:'core',    fam:'board', slots:4, pk:['flo8']},
+ {id:'studhi',   kind:'studhi',        jp:'スタッド ハイ',                  grp:'core',    fam:'stud',  slots:7, pk:['studhi']},
+ {id:'razz',     kind:'razz',          jp:'ラズ（A-5ロー）',                grp:'core',    fam:'stud',  slots:7, pk:['razz']},
+ {id:'stud8',    kind:'stud8',         jp:'スタッド ハイロー（8ob）',        grp:'core',    fam:'stud',  slots:7, pk:['stud8','sstud8']},
+ {id:'td27',     kind:'draw27',        jp:'2-7 トリプルドロー',             grp:'core',    fam:'draw',  slots:5, draws:3, pk:['td27']},
+ {id:'sd27',     kind:'draw27',        jp:'2-7 シングルドロー',             grp:'core',    fam:'draw',  slots:5, draws:1, pk:['sd27']},
+ {id:'badugi',   kind:'badugi',        jp:'バドゥーギ',                     grp:'core',    fam:'draw',  slots:4, draws:3, pk:['badugi']},
+ {id:'bigo',     kind:'bigo',          jp:'ビッグO（5枚オマハ 8ob）',        grp:'another', fam:'board', slots:5, pk:['plbigo','flbigo']},
+ {id:'stud8nq',  kind:'sstud8nq',      jp:'スタッド ハイロー NQ（資格なし）', grp:'another', fam:'stud',  slots:7, pk:['sstud8nq','plsstud8nq']},
+ {id:'actionrazz',kind:'actionrazz',   jp:'アクション ラズ（絵札資格）',      grp:'another', fam:'stud',  slots:7, pk:['actionrazz']},
+ {id:'razzdacey',kind:'razzdacey',     jp:'ラズデューギ（Razz＋A強バドゥーギ）', grp:'another', fam:'stud', slots:7, pk:['razzdacey']},
+ {id:'razzdeucey',kind:'razzdeucey',   jp:'ラズデューシー（2-7＋A弱バドゥーギ）', grp:'another', fam:'stud', slots:7, pk:['razzdeucey']},
+ {id:'a5td',     kind:'a5td',          jp:'A-5 トリプルドロー',             grp:'another', fam:'draw',  slots:5, draws:3, pk:['a5td']},
+ {id:'badacey',  kind:'badacey',       jp:'バデーシー（Badugi＋A-5）',       grp:'another', fam:'draw',  slots:5, draws:3, pk:['badacey']},
+ {id:'baduecey', kind:'baduecey',      jp:'バデューシー（Badugi＋2-7）',     grp:'another', fam:'draw',  slots:5, draws:3, pk:['baduecey']},
+ {id:'archie',   kind:'archie',        jp:'アーチー（Hi-Lo トリプルドロー）', grp:'another', fam:'draw',  slots:5, draws:3, pk:['archie']},
+ {id:'ari',      kind:'ari',           jp:'アーリー（Archie＋共有1枚）',      grp:'another', fam:'draw',  slots:5, draws:3, pk:['ari']},
+ {id:'dramahaHi',kind:'dramahaHi',     jp:'ドラマハ ハイ',                   grp:'another', fam:'board', slots:5, pk:['dramahaHi']},
+ {id:'dramaha27',kind:'dramaha27',     jp:'ドラマハ 2-7',                    grp:'another', fam:'board', slots:5, pk:['dramaha27']},
+ {id:'dramahaBadugi',kind:'dramahaBadugi', jp:'ドラマハ バドゥーギ',         grp:'another', fam:'board', slots:5, pk:['dramahaBadugi']},
+ {id:'dboard8',  kind:'dboard8',       jp:'ダブルボード オマハ8',            grp:'another', fam:'board', slots:5, pk:['dboard8']},
+ {id:'dboardBigO',kind:'dboardBigO',   jp:'ダブルボード ビッグO',            grp:'another', fam:'board', slots:5, pk:['dboardBigO']},
+ {id:'chinchi',  kind:'chinchi',       jp:'スタッド チンチロー',             grp:'abyss',   fam:'stud',  slots:7, chin:true, pk:['chinchi']},
+ {id:'achinchi', kind:'achinchi',      jp:'アクション チンチロー',           grp:'abyss',   fam:'stud',  slots:7, chin:true, pk:['achinchi']},
+].map(g=>{
+  const b=SRC[g.pk[0]]||{};
+  g.split=!!b.split; g.hiLabel=b.hiLabel||'ハイ'; g.loLabel=b.loLabel||'ロー';
+  g.presets=[].concat.apply([], g.pk.map(k=>PRESETS[k]||[]));
+  g.vspresets=[].concat.apply([], g.pk.map(k=>VS_PRESETS[k]||[]));
+  return g;
+});
+const G_BY_ID = Object.fromEntries(LAB_GAMES.map(g=>[g.id,g]));
+const DBL_BOARD = new Set(['dboard8','dboardBigO']);
+const SUITS=['s','h','d','c'], SSYM={s:'♠',h:'♥',d:'♦',c:'♣'};
+const SCOL={s:'#eae6ff',h:'#ff5fa2',d:'#55c7ff',c:'#4ee6b8'};
+const idOf=(r,s)=>(r-2)*4+s;
+const cardObj=id=>({r:Math.floor(id/4)+2,s:id%4,id});
+const cardTxt=id=>{const r=Math.floor(id/4)+2,s=id%4;return (r===14?'A':r===10?'T':r>10?'KQJ'[13-r]:String(r))+SSYM[SUITS[s]];};
+const compact=a=>a.filter(x=>x!=null);
+
+/* スタッド7枚の意味：0,1=伏せ札 / 2=3rd(ドア) / 3,4,5=4th〜6th / 6=7th(伏せ) */
+const STUD_LAB=['伏せ1','伏せ2','3rd','4th','5th','6th','7th'];
+const CHIN_HAND=[0,1,6], CHIN_BOARD=[2,3,4,5];
+const BOARD_LAB=['フロップ1','フロップ2','フロップ3','ターン','リバー'];
+
+const state={ gid:'holdem', mode:'rnd', nopp:1, tmode:'auto', trials:5000,
+  hero:[], heroDisc:[], opps:[{on:true,cards:[],disc:[]},{on:false,cards:[],disc:[]},{on:false,cards:[],disc:[]}],
+  board:[], board2:[], running:false };
+function game(){ return G_BY_ID[state.gid]; }
+function resetHands(){
+  const n=game().slots;
+  state.hero=new Array(n).fill(null); state.heroDisc=[];
+  state.opps.forEach(o=>{ o.cards=new Array(n).fill(null); o.disc=[]; });
+  state.board=new Array(5).fill(null); state.board2=new Array(5).fill(null);
+}
+function activeOpps(){ return state.opps.filter(o=>o.on); }
+function usedIds(except){
+  const u=new Set(); const add=a=>a.forEach(x=>{ if(x!=null) u.add(x); });
+  add(state.hero);
+  if(state.mode==='vs'){ activeOpps().forEach(o=>add(o.cards)); add(state.board); add(state.board2); }
+  if(except!=null) u.delete(except);
+  return u;
+}
+
+/* ---------- 計算コア（DOM非依存） ---------- */
+function validate(){
+  const g=game();
+  const hn=compact(state.hero).length;
+  if(hn===0) return 'あなたの手札を入力してください';
+  if(g.fam!=='stud' && hn!==g.slots) return 'このゲームは手札'+g.slots+'枚ちょうどで入力してください';
+  if(state.mode==='vs'){
+    const act=activeOpps();
+    if(act.length===0) return 'VSモードでは相手を1人以上有効にしてください';
+    for(const o of act){
+      const n=compact(o.cards).length;
+      if(g.fam==='stud'){ continue; } /* スタッドは空欄=ランダム完走でOK */
+      if(n!==g.slots) return '相手の手札も'+g.slots+'枚ちょうどで入力してください';
+    }
+    if(g.fam==='board'){
+      const bl=compact(state.board).length, b2=compact(state.board2).length;
+      if(bl>0&&bl<3) return 'ボードは0枚か3〜5枚で入力してください（フロップ単位）';
+      if(DBL_BOARD.has(g.kind)&&b2>0&&b2<3) return 'ボード2は0枚か3〜5枚で入力してください';
+    }
+  }
+  return null;
+}
+function trialsWanted(){ return state.tmode==='auto' ? (TRIALS[game().kind]||4000) : Math.max(500,Math.min(200000,state.trials|0)); }
+function shufflePool(){
+  const used=usedIds(null);
+  const pool=[]; for(let i=0;i<52;i++) if(!used.has(i)) pool.push(i);
+  for(let i=pool.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; const t=pool[i]; pool[i]=pool[j]; pool[j]=t; }
+  return pool;
+}
+/* チンチロー系のみ：伏せ2枚と7thの「位置」が役に直結するため空欄を毎試行ランダムで埋める */
+function chinHands(){
+  const pool=shufflePool(); let pi=0;
+  const fill=a=>a.map(x=> x!=null ? x : pool[pi++]);
+  const hero=fill(state.hero);
+  const opps= state.mode==='vs' ? activeOpps().map(o=>fill(o.cards)) : [];
+  return {hero,opps};
+}
+function simBatch(n, playerIdx){
+  const g=game(); let sh=0,hi=0,lo=0,sc=0;
+  const toObj=a=>a.map(cardObj);
+  for(let i=0;i<n;i++){
+    let r;
+    if(g.fam==='stud'){
+      let hero, opps;
+      if(g.chin){ const f=chinHands(); hero=f.hero; opps=f.opps; }
+      else { hero=compact(state.hero); opps=activeOpps().map(o=>compact(o.cards)); }
+      if(state.mode==='rnd'){
+        r=E.vsOneTrial({kind:g.kind, hero:toObj(hero), opps:new Array(state.nopp).fill(0).map(()=>[])});
+      } else {
+        const hands=[hero].concat(opps);
+        const me=hands[playerIdx], others=hands.filter((_,k)=>k!==playerIdx);
+        r=E.vsOneTrial({kind:g.kind, hero:toObj(me), opps:others.map(toObj)});
+      }
+    } else if(g.fam==='draw'){
+      if(state.mode==='rnd'){
+        r=E.oneTrial(g.kind, toObj(compact(state.hero)), state.nopp, g.draws||1);
+      } else {
+        const hands=[compact(state.hero)].concat(activeOpps().map(o=>compact(o.cards)));
+        const discs=[state.heroDisc].concat(activeOpps().map(o=>o.disc));
+        const me=hands[playerIdx], meD=discs[playerIdx];
+        const others=hands.filter((_,k)=>k!==playerIdx), othersD=discs.filter((_,k)=>k!==playerIdx);
+        r=E.vsOneTrial({kind:g.kind, hero:toObj(me), opps:others.map(toObj),
+                        ndraws:g.draws||1, heroDisc:meD.slice(), oppDisc:othersD.map(d=>d.slice())});
+      }
+    } else {
+      if(state.mode==='rnd'){
+        r=E.oneTrial(g.kind, toObj(compact(state.hero)), state.nopp, g.draws||0);
+      } else {
+        const hands=[compact(state.hero)].concat(activeOpps().map(o=>compact(o.cards)));
+        const me=hands[playerIdx], others=hands.filter((_,k)=>k!==playerIdx);
+        const cfg={kind:g.kind, hero:toObj(me), opps:others.map(toObj)};
+        const bd=compact(state.board), b2=compact(state.board2);
+        if(bd.length) cfg.board=toObj(bd);
+        if(b2.length) cfg.board2=toObj(b2);
+        r=E.vsOneTrial(cfg);
+      }
+    }
+    sh+=r.share; if(r.hi)hi+=r.hi; if(r.lo)lo+=r.lo; if(r.scoop)sc+=(r.scoop===true?1:r.scoop);
+  }
+  return {sh,hi,lo,sc,n};
+}
+window.LAB_TEST={state, simBatch, validate, trialsWanted, LAB_GAMES, resetHands};
+
+/* ---------- UI ---------- */
+const $=s=>document.querySelector(s);
+function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('on'); setTimeout(()=>t.classList.remove('on'),2800); }
+function renderGameSelect(){
+  const grp={core:'10-GAME 由来',another:'ANOTHER',abyss:'ABYSS（ローカル）'};
+  let html='';
+  for(const gk of ['core','another','abyss']){
+    const gs=LAB_GAMES.filter(g=>g.grp===gk); if(!gs.length) continue;
+    html+='<optgroup label="'+grp[gk]+'">'+gs.map(g=>'<option value="'+g.id+'"'+(g.id===state.gid?' selected':'')+'>'+g.jp+'</option>').join('')+'</optgroup>';
+  }
+  $('#gsel').innerHTML=html;
+}
+function presetList(){ const g=game(); return state.mode==='rnd' ? g.presets : g.vspresets; }
+function renderPresets(){
+  const list=presetList();
+  $('#psel').innerHTML='<option value="">プリセットを選ぶ…</option>'+list.map((p,i)=>'<option value="'+i+'">'+p.n+'</option>').join('');
+  $('#papply').disabled=!list.length;
+}
+function slotHtml(id,key,idx,label,discOn,canDisc){
+  let inner;
+  if(id==null) inner='<button class="slot empty" data-k="'+key+'" data-i="'+idx+'">＋</button>';
+  else{
+    const s=id%4;
+    inner='<button class="slot filled'+(discOn?' willdisc':'')+'" data-k="'+key+'" data-i="'+idx+'" style="color:'+SCOL[SUITS[s]]+'">'
+      +cardTxt(id)+'<span class="rm" data-rm="1">×</span>'
+      +(canDisc?'<span class="dc'+(discOn?' on':'')+'" data-dc="1" title="交換するカード">⇄</span>':'')+'</button>';
+  }
+  return '<div class="sw">'+(label?'<span class="sl">'+label+'</span>':'')+inner+'</div>';
+}
+function rowHtml(arr,key,idxs,labels,discArr,canDisc){
+  return idxs.map(i=>slotHtml(arr[i],key,i,labels?labels[i]:'',discArr?discArr.indexOf(i)>=0:false,canDisc)).join('');
+}
+function handBlock(arr,key,discArr){
+  const g=game();
+  const canDisc = (g.fam==='draw' && state.mode==='vs');
+  if(g.chin){
+    return '<div class="sgrp"><span class="sgt">ハンド（チンチロ役）</span><span class="sgn">伏せ札2枚＋7th の3枚で役</span>'
+      +'<div class="slots">'+rowHtml(arr,key,CHIN_HAND,STUD_LAB,null,false)+'</div></div>'
+      +'<div class="sgrp"><span class="sgt">看板（表札）</span><span class="sgn">ロー側のみで使用・チンチロ役には不参加</span>'
+      +'<div class="slots">'+rowHtml(arr,key,CHIN_BOARD,STUD_LAB,null,false)+'</div></div>';
+  }
+  const idxs=[]; for(let i=0;i<g.slots;i++) idxs.push(i);
+  const labels = g.fam==='stud' ? STUD_LAB : null;
+  return '<div class="slots">'+rowHtml(arr,key,idxs,labels,discArr,canDisc)+'</div>';
+}
+function hintText(){
+  const g=game();
+  if(g.fam==='stud') return '7枚のうち分かっているカードだけ入力し、空欄はランダムで完走します（1枚からOK）。'+(g.chin?'チンチロ役は「伏せ札2枚＋7th」の3枚だけで判定します。':'');
+  if(g.fam==='draw') return state.mode==='vs'
+    ? (g.draws>1 ? '⇄ をタップして「1回目に交換するカード」を指定します（2〜'+g.draws+'回目はエンジンが自動で最適化）。'
+                 : '⇄ をタップして交換するカードを指定します。')
+    : 'vs ランダムでは全員がエンジンの最適戦略で自動交換します。交換を指定するには「VS 指定対決」へ。';
+  return '手札は'+g.slots+'枚ちょうど入力してください。';
+}
+function render(){
+  const g=game();
+  $('#chip-game').textContent=g.jp;
+  $('#chip-mode').textContent= state.mode==='rnd' ? ('vs ランダム×'+state.nopp) : 'VS 指定対決';
+  $('#chip-split').textContent= g.split ? (g.hiLabel+' / '+g.loLabel) : 'ハイのみ';
+  document.querySelectorAll('#modeseg .seg').forEach(b=>b.classList.toggle('on', b.dataset.m===state.mode));
+  document.querySelectorAll('#noppseg .seg').forEach(b=>b.classList.toggle('on', +b.dataset.n===state.nopp));
+  document.querySelectorAll('#tseg .seg').forEach(b=>b.classList.toggle('on', b.dataset.t===state.tmode));
+  $('#trialbox').style.display = state.tmode==='auto' ? 'none' : 'block';
+  $('#autoinfo').textContent = 'AUTO：'+(TRIALS[g.kind]||4000).toLocaleString()+'回 × 人数分';
+  $('#noppwrap').style.display = state.mode==='rnd' ? 'block' : 'none';
+  $('#hint').textContent = hintText();
+  $('#heroSlots').innerHTML = handBlock(state.hero,'hero',state.heroDisc);
+  const hn=compact(state.hero).length;
+  $('#heroMeta').textContent = '入力 '+hn+' / '+g.slots+(g.fam==='stud'?'（空欄はランダム完走）':'')
+    + (g.fam==='draw'&&state.mode==='vs' ? '　交換 '+state.heroDisc.length+'枚' : '');
+  const showVs = state.mode==='vs';
+  $('#oppsWrap').style.display = showVs?'block':'none';
+  if(showVs){
+    state.opps.forEach((o,i)=>{
+      $('#opp'+i+'chk').checked=o.on;
+      $('#opp'+i+'slots').innerHTML = o.on ? handBlock(o.cards,'opp'+i,o.disc) : '<div class="offmsg">無効（チェックで参加）</div>';
+      const m=$('#opp'+i+'meta');
+      if(o.on){ const n=compact(o.cards).length;
+        m.textContent = (g.fam==='stud'&&n===0) ? '未入力＝ランダム完走'
+          : '入力 '+n+' / '+g.slots + (g.fam==='draw' ? '　交換 '+o.disc.length+'枚' : '');
+      } else m.textContent='';
+    });
+  }
+  const boardable = (g.fam==='board');
+  $('#boardWrap').style.display = (showVs&&boardable)?'block':'none';
+  if(showVs&&boardable) $('#boardSlots').innerHTML=rowHtml(state.board,'board',[0,1,2,3,4],BOARD_LAB,null,false);
+  $('#board2Wrap').style.display = (showVs&&DBL_BOARD.has(g.kind))?'block':'none';
+  if(showVs&&DBL_BOARD.has(g.kind)) $('#board2Slots').innerHTML=rowHtml(state.board2,'board2',[0,1,2,3,4],BOARD_LAB,null,false);
+  renderPresets();
+}
+let pickTarget=null;
+function arrOf(key){ return key==='hero'?state.hero: key==='board'?state.board: key==='board2'?state.board2: state.opps[+key.slice(3)].cards; }
+function discOf(key){ return key==='hero'?state.heroDisc: (key.indexOf('opp')===0? state.opps[+key.slice(3)].disc : null); }
+function openPicker(key,idx){
+  pickTarget={key,idx};
+  const cur=arrOf(key)[idx]; const used=usedIds(cur);
+  let h='';
+  for(let s=0;s<4;s++){
+    h+='<div class="prow">';
+    for(let r=14;r>=2;r--){ const id=idOf(r,s); const dis=used.has(id)&&id!==cur;
+      h+='<button class="pc'+(dis?' dis':'')+(id===cur?' cur':'')+'" data-id="'+id+'" '+(dis?'disabled':'')+' style="color:'+SCOL[SUITS[s]]+'">'+cardTxt(id)+'</button>'; }
+    h+='</div>';
+  }
+  $('#pickGrid').innerHTML=h; $('#picker').classList.add('on');
+}
+function assignCard(id){ arrOf(pickTarget.key)[pickTarget.idx]=id; $('#picker').classList.remove('on'); render(); }
+function removeCard(key,idx){
+  arrOf(key)[idx]=null;
+  const d=discOf(key); if(d){ const k=d.indexOf(idx); if(k>=0) d.splice(k,1); }
+  render();
+}
+function toggleDisc(key,idx){
+  const d=discOf(key); if(!d) return;
+  const k=d.indexOf(idx); if(k>=0) d.splice(k,1); else d.push(idx);
+  render();
+}
+async function run(){
+  if(state.running) return;
+  const err=validate(); if(err){ toast(err); return; }
+  state.running=true; $('#runbtn').disabled=true; $('#runbtn').textContent='計算中…';
+  $('#results').innerHTML=''; $('#prog i').style.width='0%';
+  const g=game(); const T=trialsWanted();
+  const names = state.mode==='rnd' ? ['あなた'] :
+    ['あなた'].concat(activeOpps().map((o,i)=>{
+      const n=compact(o.cards).length;
+      return '相手 '+(i+1)+((g.fam==='stud'&&n===0)?'（ランダム）':'');
+    }));
+  const t0=performance.now(); let deals=0; const rows=[];
+  for(let p=0;p<names.length;p++){
+    const acc={sh:0,hi:0,lo:0,sc:0,n:0};
+    while(acc.n<T){
+      const b=simBatch(Math.min(400,T-acc.n),p);
+      acc.sh+=b.sh;acc.hi+=b.hi;acc.lo+=b.lo;acc.sc+=b.sc;acc.n+=b.n;deals+=b.n;
+      $('#prog i').style.width=(100*deals/(T*names.length)).toFixed(1)+'%';
+      $('#meta').textContent=deals.toLocaleString()+' deals';
+      await new Promise(r=>setTimeout(r,0));
+    }
+    rows.push({name:names[p], eq:100*acc.sh/acc.n, hi:100*acc.hi/acc.n, lo:100*acc.lo/acc.n, sc:100*acc.sc/acc.n});
+  }
+  const ms=Math.round(performance.now()-t0);
+  $('#meta').textContent=deals.toLocaleString()+' deals ・ '+ms.toLocaleString()+' ms';
+  const head='<tr><th>PLAYER</th><th>EQ</th>'+(g.split?'<th>'+g.hiLabel+'</th><th>'+g.loLabel+'</th><th>スクープ</th>':'')+'</tr>';
+  let body=rows.map(r=>'<tr><td>'+r.name+'</td><td class="eq"><span class="bar" style="width:'+Math.min(100,r.eq)+'%"></span>'+r.eq.toFixed(1)+'%</td>'+
+    (g.split?'<td>'+r.hi.toFixed(1)+'%</td><td>'+r.lo.toFixed(1)+'%</td><td>'+r.sc.toFixed(1)+'%</td>':'')+'</tr>').join('');
+  if(state.mode==='rnd'){
+    const rest=(100-rows[0].eq)/state.nopp;
+    body+='<tr class="dim"><td>ランダム相手 ×'+state.nopp+'（平均）</td><td class="eq">'+rest.toFixed(1)+'%</td>'+(g.split?'<td>—</td><td>—</td><td>—</td>':'')+'</tr>';
+  }
+  $('#results').innerHTML='<table>'+head+body+'</table>'+
+    (state.mode==='vs'&&names.length>2?'<div class="note">※各プレイヤーを独立に試行しているため合計は100%前後になります</div>':'');
+  state.running=false; $('#runbtn').disabled=false; $('#runbtn').textContent='EQ を計算';
+}
+function applyPreset(){
+  const i=$('#psel').value; if(i==='')return;
+  const p=presetList()[+i]; if(!p)return;
+  const R={A:14,K:13,Q:12,J:11,T:10};
+  const toIds=a=>a.map(cs=>idOf(R[cs[0]]||+cs[0], {s:0,h:1,d:2,c:3}[cs[1]]));
+  const g=game();
+  const put=(ids)=>{ const a=new Array(g.slots).fill(null); ids.forEach((v,k)=>{ if(k<g.slots) a[k]=v; }); return a; };
+  resetHands();
+  if(state.mode==='rnd'){ state.hero=put(toIds(p.c)); }
+  else{
+    state.hero=put(toIds(p.hero)); state.heroDisc=(p.hd||[]).slice();
+    state.opps.forEach((o,j)=>{
+      if(p.opps[j]){ o.on=true; o.cards=put(toIds(p.opps[j])); o.disc=((p.od&&p.od[j])||[]).slice(); }
+      else { o.on=false; o.cards=new Array(g.slots).fill(null); o.disc=[]; }
+    });
+    if(p.board){ const b=toIds(p.board); state.board=new Array(5).fill(null); b.forEach((v,k)=>state.board[k]=v); }
+    if(p.board2){ const b=toIds(p.board2); state.board2=new Array(5).fill(null); b.forEach((v,k)=>state.board2[k]=v); }
+  }
+  render();
+}
+document.addEventListener('click',e=>{
+  const t=e.target;
+  if(t.dataset&&t.dataset.rm){ const b=t.closest('.slot'); removeCard(b.dataset.k,+b.dataset.i); e.stopPropagation(); return; }
+  if(t.dataset&&t.dataset.dc){ const b=t.closest('.slot'); toggleDisc(b.dataset.k,+b.dataset.i); e.stopPropagation(); return; }
+  const slot=t.closest?t.closest('.slot'):null; if(slot){ openPicker(slot.dataset.k,+slot.dataset.i); return; }
+  const pc=t.closest?t.closest('.pc'):null; if(pc&&!pc.disabled){ assignCard(+pc.dataset.id); return; }
+  if(t.id==='pickClose'||t.id==='picker'){ $('#picker').classList.remove('on'); return; }
+  if(t.id==='runbtn'){ run(); return; }
+  const seg=t.closest?t.closest('.seg'):null;
+  if(seg&&!seg.disabled){
+    if(seg.id==='clearHero'){ const n=game().slots; state.hero=new Array(n).fill(null); state.heroDisc=[]; render(); return; }
+    if(seg.id==='papply'){ applyPreset(); return; }
+    if(seg.dataset.m) state.mode=seg.dataset.m;
+    if(seg.dataset.n) state.nopp=+seg.dataset.n;
+    if(seg.dataset.t) state.tmode=seg.dataset.t;
+    render(); return;
+  }
+});
+document.addEventListener('change',e=>{
+  if(e.target.id==='gsel'){ state.gid=e.target.value; resetHands(); render(); }
+  if(e.target.id==='trialinput'){ state.trials=+e.target.value||5000; }
+  if(/^opp\dchk$/.test(e.target.id)){ state.opps[+e.target.id[3]].on=e.target.checked; render(); }
+});
+resetHands(); renderGameSelect(); render();
+
+</script>
+
+
+<script>
+/* ================= BOOT シーケンス ================= */
+(function(){
+  var boot=document.getElementById('boot'); if(!boot) return;
+  document.body.classList.add('booting');
+  /* ワープ片を生成 */
+  var warp=document.getElementById('btwarp');
+  var GL=['♠','♥','♦','♣','A','K','Q','J','7','2','%','0','1'];
+  var COL=['#ff5fa2','#ffd93d','#4ee6b8','#55c7ff','#eae6ff'];
+  var frag='';
+  for(var i=0;i<46;i++){
+    var ang=Math.random()*Math.PI*2, rad=40+Math.random()*230;
+    frag+='<i style="--x:'+(Math.cos(ang)*rad).toFixed(0)+'px;--y:'+(Math.sin(ang)*rad).toFixed(0)+'px;'
+      +'--r:'+((Math.random()*720-360)|0)+'deg;color:'+COL[(Math.random()*COL.length)|0]+';'
+      +'animation-delay:'+(Math.random()*1.5).toFixed(2)+'s;'
+      +'font-size:'+(14+Math.random()*22).toFixed(0)+'px">'+GL[(Math.random()*GL.length)|0]+'</i>';
+  }
+  warp.innerHTML=frag;
+  /* 進捗ログ */
+  var STEPS=[[14,'LOADING ENGINE'],[34,'DEALING 52 CARDS'],[56,'BUILDING 26 GAMES'],[76,'CALIBRATING MONTE CARLO'],[92,'SHUFFLING DECK'],[100,'READY']];
+  var bar=document.getElementById('btbar'), log=document.getElementById('btlog'), pct=document.getElementById('btpct');
+  var p=0, si=0, done=false, t0=Date.now();
+  var tick=setInterval(function(){
+    p=Math.min(100, p + 1.7 + Math.random()*4.6);
+    bar.style.width=p.toFixed(1)+'%';
+    pct.textContent=(p|0)+'%';
+    while(si<STEPS.length && p>=STEPS[si][0]){ log.textContent=STEPS[si][1]; si++; }
+    if(p>=100){ clearInterval(tick); setTimeout(bye, 340); }
+  }, 62);
+  function bye(){
+    if(done) return; done=true; clearInterval(tick);
+    boot.classList.add('off');
+    setTimeout(function(){
+      boot.remove();
+      document.body.classList.remove('booting');
+    }, 640);
+  }
+  document.getElementById('btskip').addEventListener('click', bye);
+  boot.addEventListener('click', bye);
+  setTimeout(bye, 5200); /* 保険 */
+})();
+</script>
+</body>
+</html>
